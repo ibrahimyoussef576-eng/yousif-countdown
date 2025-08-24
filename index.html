@@ -65,7 +65,7 @@
     position:absolute; inset:0; display:grid; place-items:center; text-align:center;
     background: rgba(0,0,0,1);   /* fully opaque */
     color:#fff;                  /* readable text */
-    backdrop-filter: none;       /* no blur (not needed now) */
+    backdrop-filter: none;       /* no blur */
     z-index:2;
   }
   .mask .inner{ display:flex; flex-direction:column; align-items:center; gap:10px; }
@@ -76,7 +76,7 @@
   }
   #scratchCanvas{ width:100%; height:100%; display:block; }
 
-  footer{ text-align:center; opacity:.75; margin:10px 0 24px; font-size:.95em; }
+  footer{ text-align:center; opacity:.85; margin:10px 0 24px; font-size:1rem; font-weight:700; }
   #confetti, #emojiRain{ position:fixed; inset:0; pointer-events:none; z-index:10; }
 </style>
 </head>
@@ -122,12 +122,16 @@
   </article>
 </section>
 
-<footer>I’ll be back soon! Meow Meow -_- Meow </footer>
+<footer>I’ll be back soon! Meow Meow Meow</footer>
 
 <script>
   /* =================== Config =================== */
   const TARGET_DATE = new Date("Sep 12, 2025 00:00:00").getTime();
   const START_DATE  = new Date("Jun 15, 2025 00:00:00").getTime(); // progress bar start
+
+  // Scratch config
+  const REVEAL_THRESHOLD = 0.90;   // require 90% cleared to auto-hide
+  const MIN_CHECK_THRESHOLD = 0.05; // (reserved if you want to ignore first 5% scratches)
 
   /* ========== Countdown / Progress / Messages ========== */
   let compactFormat = false, finished = false;
@@ -200,13 +204,18 @@
 
     // Size canvas for device pixel ratio
     const DPR = window.devicePixelRatio || 1;
-    c.width = wrapRect.width * DPR; c.height = wrapRect.height * DPR;
-    c.style.width = wrapRect.width + "px"; c.style.height = wrapRect.height + "px";
-    ctx.scale(DPR, DPR);
+    c.width = Math.max(1, Math.floor(wrapRect.width * DPR));
+    c.height = Math.max(1, Math.floor(wrapRect.height * DPR));
+    c.style.width = wrapRect.width + "px";
+    c.style.height = wrapRect.height + "px";
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0); // ensure proper scaling
 
     // Fully opaque cover layer
-    ctx.fillStyle = "rgba(0,0,0,1)";           // <— solid black
-    ctx.fillRect(0,0,wrapRect.width,wrapRect.height);
+    ctx.globalCompositeOperation = "source-over";
+    ctx.fillStyle = "#000"; // solid black
+    ctx.fillRect(0, 0, wrapRect.width, wrapRect.height);
+
+    // Erase with brush
     ctx.globalCompositeOperation = "destination-out";
 
     let scratching = false;
@@ -218,9 +227,11 @@
     }
     function draw(e){
       if(!scratching) return;
-      e.preventDefault();                       // stop page scroll while scratching
+      e.preventDefault(); // stop page scroll while scratching
       const p = pos(e);
-      ctx.beginPath(); ctx.arc(p.x,p.y,brush,0,Math.PI*2); ctx.fill();
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, brush, 0, Math.PI * 2);
+      ctx.fill();
     }
     function start(e){ scratching = true; draw(e); }
     function end(){ scratching = false; }
@@ -231,24 +242,42 @@
     window.addEventListener("mouseup", end);
 
     // Touch (non-passive so we can preventDefault)
-    scratchWrap.addEventListener("touchstart", start, {passive:false});
-    scratchWrap.addEventListener("touchmove",  draw,  {passive:false});
-    scratchWrap.addEventListener("touchend",   end,   {passive:false});
-    scratchWrap.addEventListener("touchcancel",end,   {passive:false});
+    scratchWrap.addEventListener("touchstart", start, { passive: false });
+    scratchWrap.addEventListener("touchmove",  draw,  { passive: false });
+    scratchWrap.addEventListener("touchend",   end,   { passive: false });
+    scratchWrap.addEventListener("touchcancel",end,   { passive: false });
 
-    // Auto-hide when ~60% cleared
-    function checkClear(){
-      try{
-        const sampleW = Math.min(600, wrapRect.width);
-        const sampleH = Math.min(300, wrapRect.height);
-        const data = ctx.getImageData(0,0,sampleW,sampleH).data;
-        let clear=0; for(let i=3;i<data.length;i+=4){ if(data[i]===0) clear++; }
-        if(clear/(data.length/4) > 0.6){ scratchWrap.style.display="none"; }
-      }catch(e){}
+    // Accurate cleared fraction across FULL canvas (downsampled for speed)
+    function clearedFraction(){
+      const w = c.width, h = c.height;
+      const step = Math.max(4, Math.floor(Math.min(w, h) / 180)); // adaptive sampling
+      let clear = 0, total = 0;
+      const data = ctx.getImageData(0, 0, w, h).data;
+      for(let y = 0; y < h; y += step){
+        let rowIndex = (y * w) * 4;
+        for(let x = 0; x < w; x += step){
+          if (data[rowIndex + x*4 + 3] === 0) clear++; // alpha channel
+          total++;
+        }
+      }
+      return total ? (clear / total) : 0;
     }
-    const clearCheck = setInterval(checkClear, 700);
-    const obs = new MutationObserver(()=>{ if(scratchWrap.style.display==="none"){ clearInterval(clearCheck); obs.disconnect(); } });
-    obs.observe(scratchWrap,{attributes:true,attributeFilter:["style"]});
+
+    const clearCheck = setInterval(() => {
+      const frac = clearedFraction();
+      if (frac > REVEAL_THRESHOLD) {
+        scratchWrap.style.display = "none";
+      }
+    }, 700);
+
+    // Clean up when overlay is hidden
+    const obs = new MutationObserver(() => {
+      if (scratchWrap.style.display === "none") {
+        clearInterval(clearCheck);
+        obs.disconnect();
+      }
+    });
+    obs.observe(scratchWrap, { attributes: true, attributeFilter: ["style"] });
   }
 
   /* =================== Particles Background =================== */
