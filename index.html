@@ -61,8 +61,6 @@
     button:active{ transform: translateY(0) scale(.98);}
     .grid{
       display:flex;
-      flex-wrap:wrap;
-      gap:22px;
       justify-content:center;
       padding: 8px 16px 40px;
       width:min(1100px, 100%);
@@ -98,39 +96,12 @@
       inset:0;
       display:grid;
       place-items:center;
-      background: rgba(0,0,0,0.78); /* darker */
+      background: rgba(0,0,0,0.78);
       backdrop-filter: blur(10px);
       text-align:center;
     }
     .mask p{ margin:0 14px; opacity:.95; }
     .small{ opacity:.85; font-size:.9em; }
-    .x-overlay{
-      position:absolute;
-      inset:0;
-      display:none;
-      align-items:center;
-      justify-content:center;
-      pointer-events:none;
-    }
-    .x-overlay::before{
-      content:"✖";
-      font-size: clamp(120px, 18vw, 240px);
-      color: rgba(255,50,50,0.85);
-      text-shadow: 0 8px 30px rgba(0,0,0,.6);
-      transform: rotate(-10deg);
-    }
-    .x-badge{
-      position:absolute;
-      top:12px; right:-38px;
-      transform: rotate(35deg);
-      background:#ff3b3b;
-      color:#fff;
-      font-weight:800;
-      padding:6px 60px;
-      box-shadow: 0 6px 18px rgba(0,0,0,.35);
-      display:none;
-      letter-spacing:.5px;
-    }
     footer{opacity:.75; margin-bottom:22px; font-size:.9em;}
   </style>
 </head>
@@ -138,32 +109,18 @@
   <header>
     <h1>⏳ Countdown Until I Return</h1>
     <div class="controls">
-      <button id="revealAllBtn">🔍 Reveal Timers</button>
+      <button id="revealAllBtn">🔍 Reveal Timer</button>
       <button id="toggleFormatBtn">🔁 Toggle Format</button>
     </div>
   </header>
 
   <section class="grid">
-    <article class="card" id="card1">
-      <div class="label">Time until I return (Target: Sept 5)</div>
-      <div id="countdown1" class="time">--</div>
-      <div class="x-overlay" id="x1"></div>
-      <div class="x-badge" id="badge1">EXTENDED</div>
-      <div class="mask" id="mask1">
-        <div>
-          <p><strong>Hidden</strong> to build suspense 😄</p>
-          <button class="revealBtn" data-mask="mask1">Reveal</button>
-          <p class="small">Click to show live countdown</p>
-        </div>
-      </div>
-    </article>
-
     <article class="card" id="card2">
-      <div class="label">Sadly if extended (Target: Sept 12)</div>
+      <div class="label">Return date (Target: Sept 12)</div>
       <div id="countdown2" class="time">--</div>
       <div class="mask" id="mask2">
         <div>
-          <p><strong>Hidden</strong> just in case...</p>
+          <p><strong>Hidden</strong> until revealed 😄</p>
           <button class="revealBtn" data-mask="mask2">Reveal</button>
           <p class="small">Click to show live countdown</p>
         </div>
@@ -174,9 +131,7 @@
   <footer>I will be back soon!</footer>
 
   <script>
-    const date1 = new Date("Sep 5, 2025 00:00:00").getTime();
     const date2 = new Date("Sep 12, 2025 00:00:00").getTime();
-
     let compactFormat = false;
     let intervalId;
 
@@ -195,30 +150,20 @@
       }
     }
 
-    function update(elId, target, isFirst){
+    function update(elId, target){
       const el = document.getElementById(elId);
       const now = new Date().getTime();
       const dist = target - now;
       if (dist < 0){
-        el.textContent = "⏰ Date passed";
-        if(isFirst){
-          document.getElementById('x1').style.display = 'flex';
-          document.getElementById('badge1').style.display = 'block';
-        }
+        el.textContent = "🎉 It's time!";
         return;
-      } else if(isFirst){
-        document.getElementById('x1').style.display = 'none';
-        document.getElementById('badge1').style.display = 'none';
       }
       el.textContent = fmt(dist);
       el.classList.add('updated');
       setTimeout(()=>el.classList.remove('updated'), 180);
     }
 
-    function tick(){
-      update("countdown1", date1, true);
-      update("countdown2", date2, false);
-    }
+    function tick(){ update("countdown2", date2); }
 
     function start(){
       if(intervalId) clearInterval(intervalId);
@@ -235,9 +180,7 @@
     document.querySelectorAll('.revealBtn').forEach(btn=>{
       btn.addEventListener('click', ()=>reveal(btn.dataset.mask));
     });
-    document.getElementById('revealAllBtn').addEventListener('click', ()=>{
-      reveal('mask1'); reveal('mask2');
-    });
+    document.getElementById('revealAllBtn').addEventListener('click', ()=>{ reveal('mask2'); });
 
     start();
   </script>
