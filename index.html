@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Countdown to Yousif’s Return</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f0f4f8;
+      color: #333;
+      padding: 50px;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    .countdown {
+      font-size: 24px;
+      margin: 20px 0;
+      padding: 15px;
+      background: #fff;
+      border-radius: 10px;
+      display: inline-block;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .label {
+      font-weight: bold;
+      margin-bottom: 10px;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>⏳ Yousif’s Return Countdown</h1>
+
+  <div class="countdown">
+    <span class="label">Time until Yousif returns to Michigan</span>
+    <span id="countdown1"></span>
+  </div>
+
+  <div class="countdown">
+    <span class="label">Sadly if extended</span>
+    <span id="countdown2"></span>
+  </div>
+
+  <script>
+    function updateCountdown(targetDate, elementId) {
+      const now = new Date().getTime();
+      const distance = targetDate - now;
+
+      if (distance < 0) {
+        document.getElementById(elementId).innerHTML = "🎉 Yousif has returned!";
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      document.getElementById(elementId).innerHTML =
+        days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
+    }
+
+    // Set target dates
+    const date1 = new Date("Sep 5, 2025 00:00:00").getTime();
+    const date2 = new Date("Sep 12, 2025 00:00:00").getTime();
+
+    // Update every second
+    setInterval(function() {
+      updateCountdown(date1, "countdown1");
+      updateCountdown(date2, "countdown2");
+    }, 1000);
+  </script>
+</body>
+</html>
