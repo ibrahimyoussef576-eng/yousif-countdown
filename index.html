@@ -18,7 +18,7 @@
     html,body{height:100%}
     body{
       margin:0;
-      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
       color:var(--text);
       background: linear-gradient(135deg, var(--bg1), var(--bg2)) fixed;
       display:flex;
@@ -35,7 +35,6 @@
     h1{
       margin:0;
       font-weight:800;
-      letter-spacing:.5px;
       text-shadow: 2px 6px 18px rgba(0,0,0,.25);
       font-size: clamp(28px, 4vw, 44px);
     }
@@ -47,7 +46,6 @@
       margin-top:14px;
     }
     button{
-      appearance:none;
       border:none;
       background: rgba(255,255,255,0.18);
       color:var(--text);
@@ -72,7 +70,7 @@
     .card{
       position:relative;
       width:min(480px, 92vw);
-      padding:22px 22px 26px;
+      padding:22px;
       border-radius:18px;
       background: var(--card);
       box-shadow: var(--shadow);
@@ -88,7 +86,6 @@
     .time{
       font-variant-numeric: tabular-nums;
       font-weight:900;
-      letter-spacing:1.5px;
       font-size: clamp(24px, 3.2vw, 36px);
       text-align:center;
       color: var(--accent);
@@ -101,13 +98,39 @@
       inset:0;
       display:grid;
       place-items:center;
-      background: linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.45));
-      backdrop-filter: var(--blur);
-      gap:10px;
+      background: rgba(0,0,0,0.78); /* darker */
+      backdrop-filter: blur(10px);
       text-align:center;
     }
-    .mask p{ margin:0 14px; opacity:.9; }
-    .small{ opacity:.8; font-size:.9em; }
+    .mask p{ margin:0 14px; opacity:.95; }
+    .small{ opacity:.85; font-size:.9em; }
+    .x-overlay{
+      position:absolute;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      pointer-events:none;
+    }
+    .x-overlay::before{
+      content:"✖";
+      font-size: clamp(120px, 18vw, 240px);
+      color: rgba(255,50,50,0.85);
+      text-shadow: 0 8px 30px rgba(0,0,0,.6);
+      transform: rotate(-10deg);
+    }
+    .x-badge{
+      position:absolute;
+      top:12px; right:-38px;
+      transform: rotate(35deg);
+      background:#ff3b3b;
+      color:#fff;
+      font-weight:800;
+      padding:6px 60px;
+      box-shadow: 0 6px 18px rgba(0,0,0,.35);
+      display:none;
+      letter-spacing:.5px;
+    }
     footer{opacity:.75; margin-bottom:22px; font-size:.9em;}
   </style>
 </head>
@@ -117,8 +140,6 @@
     <div class="controls">
       <button id="revealAllBtn">🔍 Reveal Timers</button>
       <button id="toggleFormatBtn">🔁 Toggle Format</button>
-      <button id="pauseBtn">⏸️ Pause</button>
-      <button id="resumeBtn" style="display:none;">▶️ Resume</button>
     </div>
   </header>
 
@@ -126,6 +147,8 @@
     <article class="card" id="card1">
       <div class="label">Time until I return (Target: Sept 5)</div>
       <div id="countdown1" class="time">--</div>
+      <div class="x-overlay" id="x1"></div>
+      <div class="x-badge" id="badge1">EXTENDED</div>
       <div class="mask" id="mask1">
         <div>
           <p><strong>Hidden</strong> to build suspense 😄</p>
@@ -148,15 +171,13 @@
     </article>
   </section>
 
-  <footer>Made with ❤️ — auto-updates every second</footer>
+  <footer>I will be back soon!</footer>
 
   <script>
-    // ====== Timer Logic ======
     const date1 = new Date("Sep 5, 2025 00:00:00").getTime();
     const date2 = new Date("Sep 12, 2025 00:00:00").getTime();
 
-    let compactFormat = false; // false: D H M S, true: total days + hours
-    let paused = false;
+    let compactFormat = false;
     let intervalId;
 
     function fmt(distance){
@@ -174,13 +195,20 @@
       }
     }
 
-    function update(elId, target){
+    function update(elId, target, isFirst){
       const el = document.getElementById(elId);
       const now = new Date().getTime();
       const dist = target - now;
       if (dist < 0){
-        el.textContent = "🎉 It’s time!";
+        el.textContent = "⏰ Date passed";
+        if(isFirst){
+          document.getElementById('x1').style.display = 'flex';
+          document.getElementById('badge1').style.display = 'block';
+        }
         return;
+      } else if(isFirst){
+        document.getElementById('x1').style.display = 'none';
+        document.getElementById('badge1').style.display = 'none';
       }
       el.textContent = fmt(dist);
       el.classList.add('updated');
@@ -188,9 +216,8 @@
     }
 
     function tick(){
-      if(paused) return;
-      update("countdown1", date1);
-      update("countdown2", date2);
+      update("countdown1", date1, true);
+      update("countdown2", date2, false);
     }
 
     function start(){
@@ -199,33 +226,19 @@
       intervalId = setInterval(tick, 1000);
     }
 
-    // ====== UI Controls ======
     document.getElementById('toggleFormatBtn').addEventListener('click', ()=>{
       compactFormat = !compactFormat;
       tick();
     });
 
-    document.getElementById('pauseBtn').addEventListener('click', ()=>{
-      paused = true;
-      document.getElementById('pauseBtn').style.display = 'none';
-      document.getElementById('resumeBtn').style.display = 'inline-block';
-    });
-
-    document.getElementById('resumeBtn').addEventListener('click', ()=>{
-      paused = false;
-      document.getElementById('resumeBtn').style.display = 'none';
-      document.getElementById('pauseBtn').style.display = 'inline-block';
-      tick();
-    });
-
-    // Reveal logic
-    function reveal(maskId){ const m = document.getElementById(maskId); if(m) m.style.display='none'; }
+    function reveal(maskId){ document.getElementById(maskId).style.display='none'; }
     document.querySelectorAll('.revealBtn').forEach(btn=>{
       btn.addEventListener('click', ()=>reveal(btn.dataset.mask));
     });
-    document.getElementById('revealAllBtn').addEventListener('click', ()=>{ reveal('mask1'); reveal('mask2'); });
+    document.getElementById('revealAllBtn').addEventListener('click', ()=>{
+      reveal('mask1'); reveal('mask2');
+    });
 
-    // Start timers
     start();
   </script>
 </body>
