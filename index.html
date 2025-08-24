@@ -57,15 +57,23 @@
   .progress-track{ height:12px; border-radius:999px; background: rgba(255,255,255,.25); overflow:hidden; }
   .progress-bar{ height:100%; width:0%; background: linear-gradient(90deg,#34d399,#06b6d4); transition: width .6s ease; }
 
-  /* Message (replaces quotes) */
+  /* Message under the timer */
   .msg{ text-align:center; margin-top:12px; opacity:.95; font-weight:700; }
 
   /* Overlays */
-  .mask{ position:absolute; inset:0; display:grid; place-items:center; text-align:center;
-         background: rgba(0,0,0,0.80); color:#fff; backdrop-filter: blur(10px); z-index:2; }
+  .mask{
+    position:absolute; inset:0; display:grid; place-items:center; text-align:center;
+    background: rgba(0,0,0,1);   /* fully opaque */
+    color:#fff;                  /* readable text */
+    backdrop-filter: none;       /* no blur (not needed now) */
+    z-index:2;
+  }
   .mask .inner{ display:flex; flex-direction:column; align-items:center; gap:10px; }
 
-  .scratchWrap{ position:absolute; inset:0; z-index:3; display:none; touch-action: none; } /* KEY: stop page scroll */
+  .scratchWrap{
+    position:absolute; inset:0; z-index:3; display:none;
+    touch-action: none;          /* prevents page scroll while scratching */
+  }
   #scratchCanvas{ width:100%; height:100%; display:block; }
 
   footer{ text-align:center; opacity:.75; margin:10px 0 24px; font-size:.95em; }
@@ -114,123 +122,7 @@
   </article>
 </section>
 
-<footer><!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Countdown Until I Return</title>
-<style>
-  :root{
-    --bg1:#4facfe; --bg2:#00f2fe;
-    --card: rgba(255,255,255,0.16);
-    --text:#0f172a; --cardText:#ffffff;
-    --accent:#ffeb3b; --shadow:0 10px 30px rgba(0,0,0,0.25);
-  }
-  .dark{
-    --bg1:#0f172a; --bg2:#1e293b;
-    --card: rgba(255,255,255,0.08);
-    --text:#e5e7eb; --cardText:#e5e7eb; --accent:#ffd54f;
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-    color:var(--text); overflow-x:hidden;
-  }
-  /* Animated gradient background */
-  .bg-animated{ position:fixed; inset:0; z-index:-3;
-    background: linear-gradient(135deg, var(--bg1), var(--bg2));
-    background-size: 200% 200%; animation: grad 18s ease-in-out infinite; }
-  @keyframes grad{ 0%{background-position:0% 0%} 50%{background-position:100% 100%} 100%{background-position:0% 0%} }
-  #particles{ position:fixed; inset:0; z-index:-2; pointer-events:none; }
-
-  header{ text-align:center; padding:34px 16px 6px; }
-  h1{ margin:0 0 10px; font-weight:900; font-size: clamp(28px, 4vw, 44px); text-shadow: 0 6px 18px rgba(0,0,0,.25); }
-  .controls{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:10px; }
-  button{
-    border:none; color:var(--cardText); background: rgba(255,255,255,0.22);
-    padding:10px 14px; border-radius:12px; font-weight:700; cursor:pointer;
-    backdrop-filter:saturate(160%) blur(4px); box-shadow: var(--shadow);
-    transition: transform .12s ease, background .2s ease;
-  }
-  .dark button{ background: rgba(255,255,255,0.14); }
-  button:hover{ transform: translateY(-1px) scale(1.02); background: rgba(255,255,255,0.30);}
-
-  .grid{ display:flex; justify-content:center; padding: 18px 16px 40px; }
-  .card{
-    position:relative; width:min(560px, 94vw);
-    padding:22px 22px 26px; border-radius:18px; background: var(--card);
-    box-shadow: var(--shadow); overflow:hidden; backdrop-filter:saturate(160%) blur(8px);
-  }
-  .label{ font-size: clamp(16px, 2.2vw, 22px); font-weight:900; margin-bottom:12px; text-align:center; color:var(--cardText); }
-  .time{ font-variant-numeric: tabular-nums; font-weight:900; font-size: clamp(28px, 4vw, 40px); text-align:center;
-         color: var(--accent); text-shadow: 0 0 12px rgba(0,0,0,.55); transition: transform .18s ease; }
-  .time.updated{ transform: scale(1.05); }
-
-  /* Progress bar */
-  .progress-wrap{ margin:18px auto 6px; width:92%; }
-  .progress-track{ height:12px; border-radius:999px; background: rgba(255,255,255,.25); overflow:hidden; }
-  .progress-bar{ height:100%; width:0%; background: linear-gradient(90deg,#34d399,#06b6d4); transition: width .6s ease; }
-
-  /* Message (replaces quotes) */
-  .msg{ text-align:center; margin-top:12px; opacity:.95; font-weight:700; }
-
-  /* Overlays */
-  .mask{ position:absolute; inset:0; display:grid; place-items:center; text-align:center;
-         background: rgba(0,0,0,0.80); color:#fff; backdrop-filter: blur(10px); z-index:2; }
-  .mask .inner{ display:flex; flex-direction:column; align-items:center; gap:10px; }
-
-  .scratchWrap{ position:absolute; inset:0; z-index:3; display:none; touch-action: none; } /* KEY: stop page scroll */
-  #scratchCanvas{ width:100%; height:100%; display:block; }
-
-  footer{ text-align:center; opacity:.75; margin:10px 0 24px; font-size:.95em; }
-  #confetti, #emojiRain{ position:fixed; inset:0; pointer-events:none; z-index:10; }
-</style>
-</head>
-<body>
-<div class="bg-animated"></div>
-<canvas id="particles"></canvas>
-<canvas id="confetti"></canvas>
-<canvas id="emojiRain"></canvas>
-
-<header>
-  <h1>⏳ Countdown Until I Return</h1>
-  <div class="controls">
-    <button id="revealBtn">🔍 Reveal Timer</button>
-    <button id="scratchBtn">🪄 Scratch-to-Reveal</button>
-    <button id="toggleFormatBtn">🔁 Toggle Format</button>
-    <button id="themeBtn">🌓 Theme</button>
-  </div>
-</header>
-
-<section class="grid">
-  <article class="card" id="card">
-    <div class="label">Return date (Target: Sept 12)</div>
-
-    <!-- progress -->
-    <div class="progress-wrap">
-      <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
-      <div style="text-align:center; margin-top:6px; font-weight:700;" id="progressText"></div>
-    </div>
-
-    <div id="countdown" class="time">--</div>
-    <div class="msg" id="msg">I am almost back</div>
-
-    <!-- overlays -->
-    <div class="mask" id="mask">
-      <div class="inner">
-        <div style="font-weight:800;font-size:1.1em">Hidden until reveal 😄</div>
-        <div>Tap <strong>Reveal Timer</strong> or try <strong>Scratch-to-Reveal</strong>.</div>
-      </div>
-    </div>
-    <div class="scratchWrap" id="scratchWrap">
-      <canvas id="scratchCanvas"></canvas>
-    </div>
-  </article>
-</section>
-
-<footer>I’ll be back soon!Meow Meow Meow</footer>
+<footer>I’ll be back soon! — auto-updates every second</footer>
 
 <script>
   /* =================== Config =================== */
@@ -312,8 +204,8 @@
     c.style.width = wrapRect.width + "px"; c.style.height = wrapRect.height + "px";
     ctx.scale(DPR, DPR);
 
-    // Cover layer
-    ctx.fillStyle = "rgba(20,20,20,0.92)";
+    // Fully opaque cover layer
+    ctx.fillStyle = "rgba(0,0,0,1)";           // <— solid black
     ctx.fillRect(0,0,wrapRect.width,wrapRect.height);
     ctx.globalCompositeOperation = "destination-out";
 
@@ -326,7 +218,7 @@
     }
     function draw(e){
       if(!scratching) return;
-      e.preventDefault(); // KEY: stop page scrolling while scratching
+      e.preventDefault();                       // stop page scroll while scratching
       const p = pos(e);
       ctx.beginPath(); ctx.arc(p.x,p.y,brush,0,Math.PI*2); ctx.fill();
     }
@@ -355,216 +247,6 @@
       }catch(e){}
     }
     const clearCheck = setInterval(checkClear, 700);
-    // Clean up if overlay is hidden manually
-    const obs = new MutationObserver(()=>{ if(scratchWrap.style.display==="none"){ clearInterval(clearCheck); obs.disconnect(); } });
-    obs.observe(scratchWrap,{attributes:true,attributeFilter:["style"]});
-  }
-
-  /* =================== Particles Background =================== */
-  (function particles(){
-    const canvas = document.getElementById("particles"), ctx = canvas.getContext("2d");
-    let w,h; function resize(){ w=canvas.width=innerWidth; h=canvas.height=innerHeight; }
-    resize(); addEventListener("resize", resize);
-    const N = 60; const p = [];
-    for(let i=0;i<N;i++){
-      p.push({x:Math.random()*w,y:Math.random()*h,r:1+Math.random()*3, vx:(Math.random()-0.5)*0.4, vy:(Math.random()-0.5)*0.4, a:0.18+Math.random()*0.25});
-    }
-    function step(){
-      ctx.clearRect(0,0,w,h);
-      for(const s of p){
-        s.x+=s.vx; s.y+=s.vy;
-        if(s.x<-10) s.x=w+10; if(s.x>w+10) s.x=-10;
-        if(s.y<-10) s.y=h+10; if(s.y>h+10) s.y=-10;
-        ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
-        ctx.fillStyle = `rgba(255,255,255,${s.a})`; ctx.fill();
-      }
-      requestAnimationFrame(step);
-    }
-    step();
-  })();
-
-  /* =================== Celebration: confetti + emoji rain + sound =================== */
-  function celebrate(){
-    confettiBurst(1000, 160);
-    emojiRain("🎉✨🎊❤️🚗✈️", 2200);
-    playDing();
-  }
-  function confettiBurst(duration=1200, count=120){
-    const c = document.getElementById("confetti"), ctx = c.getContext("2d");
-    let w,h; function resize(){ w=c.width=innerWidth; h=c.height=innerHeight; } resize();
-    const flakes=[];
-    for(let i=0;i<count;i++){
-      flakes.push({x:Math.random()*w, y:-Math.random()*h*0.3, r:4+Math.random()*4, vx:(Math.random()-0.5)*3, vy:2+Math.random()*3, rot:Math.random()*Math.PI, vr:(Math.random()-0.5)*0.2});
-    }
-    const start=performance.now();
-    (function frame(now){
-      const t = now-start;
-      ctx.clearRect(0,0,w,h);
-      flakes.forEach(f=>{
-        f.x+=f.vx; f.y+=f.vy; f.rot+=f.vr;
-        ctx.save(); ctx.translate(f.x,f.y); ctx.rotate(f.rot);
-        ctx.fillStyle = `hsl(${(f.x/w)*360},90%,55%)`;
-        ctx.fillRect(-f.r, -f.r, f.r*2, f.r*2);
-        ctx.restore();
-      });
-      if(t<duration) requestAnimationFrame(frame); else ctx.clearRect(0,0,w,h);
-    })(performance.now());
-  }
-  function emojiRain(chars="🎉✨", duration=2000){
-    const c = document.getElementById("emojiRain"), ctx = c.getContext("2d");
-    let w,h; function resize(){ w=c.width=innerWidth; h=c.height=innerHeight; } resize();
-    const arr = chars.split("");
-    const drops = Array.from({length:40}, ()=>({
-      x: Math.random()*w, y: -Math.random()*h*0.2, vy: 2+Math.random()*3,
-      emoji: arr[Math.floor(Math.random()*arr.length)], size: 24+Math.random()*22
-    }));
-    const start=performance.now();
-    (function frame(now){
-      const t=now-start; ctx.clearRect(0,0,w,h);
-      drops.forEach(d=>{ d.y+=d.vy; ctx.font = `${d.size}px system-ui`; ctx.fillText(d.emoji,d.x,d.y); });
-      if(t<duration) requestAnimationFrame(frame); else ctx.clearRect(0,0,w,h);
-    })(performance.now());
-  }
-  function playDing(){
-    try{
-      const a = new (window.AudioContext||window.webkitAudioContext)();
-      const o = a.createOscillator(); const g = a.createGain();
-      o.type="sine"; o.frequency.setValueAtTime(880,a.currentTime);
-      g.gain.setValueAtTime(0.001,a.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.3,a.currentTime+0.02);
-      g.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+0.8);
-      o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime+0.8);
-    }catch(e){}
-  }
-</script>
-</body>
-</html>
-</footer>
-
-<script>
-  /* =================== Config =================== */
-  const TARGET_DATE = new Date("Sep 12, 2025 00:00:00").getTime();
-  const START_DATE  = new Date("Jun 15, 2025 00:00:00").getTime(); // progress bar start
-
-  /* ========== Countdown / Progress / Messages ========== */
-  let compactFormat = false, finished = false;
-  const elTime = document.getElementById("countdown");
-  const elBar  = document.getElementById("progressBar");
-  const elProgText = document.getElementById("progressText");
-  const elMsg  = document.getElementById("msg");
-
-  function fmt(distance){
-    const d = Math.floor(distance / (1000*60*60*24));
-    const h = Math.floor((distance % (1000*60*60*24)) / (1000*60*60));
-    const m = Math.floor((distance % (1000*60*60)) / (1000*60));
-    const s = Math.floor((distance % (1000*60)) / 1000);
-    return compactFormat ? `${d} days • ${h}h` : `${d}d ${h}h ${m}m ${s}s`;
-  }
-
-  function updateMessage(dist){
-    const twoWeeks = 14 * 24 * 60 * 60 * 1000;
-    if (dist > twoWeeks) {
-      elMsg.textContent = "Just a few weeks left";
-    } else if (dist > 0) {
-      elMsg.textContent = `Just ${fmt(dist)} left`;
-    } else {
-      elMsg.textContent = "I am back! 🎉";
-    }
-  }
-
-  function tick(){
-    const now = Date.now();
-    const dist = TARGET_DATE - now;
-
-    if(dist <= 0 && !finished){
-      finished = true;
-      elTime.textContent = "🎉 It's time!";
-      celebrate();
-    }
-    if(dist > 0){
-      elTime.textContent = fmt(dist);
-      elTime.classList.add("updated");
-      setTimeout(()=>elTime.classList.remove("updated"), 180);
-    }
-    updateMessage(dist);
-
-    // progress bar
-    const total = TARGET_DATE - START_DATE;
-    const done  = Math.max(0, Math.min(total, now - START_DATE));
-    const pct   = Math.max(0, Math.min(100, (done/total)*100));
-    elBar.style.width = pct.toFixed(1) + "%";
-    elProgText.textContent = `Progress: ${pct.toFixed(1)}%`;
-  }
-  setInterval(tick, 1000); tick();
-
-  document.getElementById("toggleFormatBtn").onclick = ()=>{ compactFormat = !compactFormat; tick(); };
-  document.getElementById("themeBtn").onclick = ()=>{ document.body.classList.toggle("dark"); };
-
-  /* =================== Reveal / Scratch =================== */
-  const mask = document.getElementById("mask");
-  const scratchWrap = document.getElementById("scratchWrap");
-  const scratchCanvas = document.getElementById("scratchCanvas");
-  document.getElementById("revealBtn").onclick = ()=>{ mask.style.display="none"; scratchWrap.style.display="none"; };
-  document.getElementById("scratchBtn").onclick = ()=>{
-    mask.style.display="none";
-    scratchWrap.style.display="block";
-    initScratch();
-  };
-
-  function initScratch(){
-    const c = scratchCanvas, ctx = c.getContext("2d");
-    const wrapRect = scratchWrap.getBoundingClientRect();
-
-    // Size canvas for device pixel ratio
-    const DPR = window.devicePixelRatio || 1;
-    c.width = wrapRect.width * DPR; c.height = wrapRect.height * DPR;
-    c.style.width = wrapRect.width + "px"; c.style.height = wrapRect.height + "px";
-    ctx.scale(DPR, DPR);
-
-    // Cover layer
-    ctx.fillStyle = "rgba(20,20,20,0.92)";
-    ctx.fillRect(0,0,wrapRect.width,wrapRect.height);
-    ctx.globalCompositeOperation = "destination-out";
-
-    let scratching = false;
-    const brush = 28;
-
-    function pos(e){
-      const t = e.touches ? e.touches[0] : e;
-      return { x: t.clientX - wrapRect.left, y: t.clientY - wrapRect.top };
-    }
-    function draw(e){
-      if(!scratching) return;
-      e.preventDefault(); // KEY: stop page scrolling while scratching
-      const p = pos(e);
-      ctx.beginPath(); ctx.arc(p.x,p.y,brush,0,Math.PI*2); ctx.fill();
-    }
-    function start(e){ scratching = true; draw(e); }
-    function end(){ scratching = false; }
-
-    // Mouse
-    scratchWrap.addEventListener("mousedown", start);
-    scratchWrap.addEventListener("mousemove", draw);
-    window.addEventListener("mouseup", end);
-
-    // Touch (non-passive so we can preventDefault)
-    scratchWrap.addEventListener("touchstart", start, {passive:false});
-    scratchWrap.addEventListener("touchmove",  draw,  {passive:false});
-    scratchWrap.addEventListener("touchend",   end,   {passive:false});
-    scratchWrap.addEventListener("touchcancel",end,   {passive:false});
-
-    // Auto-hide when ~60% cleared
-    function checkClear(){
-      try{
-        const sampleW = Math.min(600, wrapRect.width);
-        const sampleH = Math.min(300, wrapRect.height);
-        const data = ctx.getImageData(0,0,sampleW,sampleH).data;
-        let clear=0; for(let i=3;i<data.length;i+=4){ if(data[i]===0) clear++; }
-        if(clear/(data.length/4) > 0.6){ scratchWrap.style.display="none"; }
-      }catch(e){}
-    }
-    const clearCheck = setInterval(checkClear, 700);
-    // Clean up if overlay is hidden manually
     const obs = new MutationObserver(()=>{ if(scratchWrap.style.display==="none"){ clearInterval(clearCheck); obs.disconnect(); } });
     obs.observe(scratchWrap,{attributes:true,attributeFilter:["style"]});
   }
