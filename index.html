@@ -1,188 +1,357 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Countdown Until I Return</title>
-  <style>
-    :root{
-      --bg1:#4facfe;
-      --bg2:#00f2fe;
-      --card: rgba(255,255,255,0.14);
-      --text:#ffffff;
-      --accent:#ffeb3b;
-      --shadow:0 10px 30px rgba(0,0,0,0.25);
-      --blur: blur(10px);
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      color:var(--text);
-      background: linear-gradient(135deg, var(--bg1), var(--bg2)) fixed;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:flex-start;
-      gap:24px;
-    }
-    header{
-      width:100%;
-      padding:32px 16px 0;
-      text-align:center;
-    }
-    h1{
-      margin:0;
-      font-weight:800;
-      text-shadow: 2px 6px 18px rgba(0,0,0,.25);
-      font-size: clamp(28px, 4vw, 44px);
-    }
-    .controls{
-      display:flex;
-      gap:12px;
-      justify-content:center;
-      flex-wrap:wrap;
-      margin-top:14px;
-    }
-    button{
-      border:none;
-      background: rgba(255,255,255,0.18);
-      color:var(--text);
-      padding:10px 14px;
-      border-radius:12px;
-      font-weight:600;
-      cursor:pointer;
-      backdrop-filter:saturate(160%) blur(4px);
-      box-shadow: var(--shadow);
-      transition: transform .12s ease, background .2s ease;
-    }
-    button:hover{ transform: translateY(-2px) scale(1.02); background: rgba(255,255,255,0.28);}
-    button:active{ transform: translateY(0) scale(.98);}
-    .grid{
-      display:flex;
-      justify-content:center;
-      padding: 8px 16px 40px;
-      width:min(1100px, 100%);
-    }
-    .card{
-      position:relative;
-      width:min(480px, 92vw);
-      padding:22px;
-      border-radius:18px;
-      background: var(--card);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-      backdrop-filter:saturate(160%) blur(6px);
-    }
-    .label{
-      font-size: clamp(16px, 2.2vw, 22px);
-      font-weight:800;
-      margin-bottom:10px;
-      text-align:center;
-    }
-    .time{
-      font-variant-numeric: tabular-nums;
-      font-weight:900;
-      font-size: clamp(24px, 3.2vw, 36px);
-      text-align:center;
-      color: var(--accent);
-      text-shadow: 0 0 12px rgba(0,0,0,.55);
-      transition: transform .18s ease;
-    }
-    .time.updated{ transform: scale(1.05); }
-    .mask{
-      position:absolute;
-      inset:0;
-      display:grid;
-      place-items:center;
-      background: rgba(0,0,0,0.78);
-      backdrop-filter: blur(10px);
-      text-align:center;
-    }
-    .mask p{ margin:0 14px; opacity:.95; }
-    .small{ opacity:.85; font-size:.9em; }
-    footer{opacity:.75; margin-bottom:22px; font-size:.9em;}
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Countdown Until I Return</title>
+<style>
+  :root{
+    --bg1:#4facfe; --bg2:#00f2fe;
+    --card: rgba(255,255,255,0.16);
+    --text:#0f172a;
+    --accent:#ffeb3b;
+    --shadow:0 10px 30px rgba(0,0,0,0.25);
+    --cardText:#ffffff;
+  }
+  .dark{
+    --bg1:#0f172a; --bg2:#1e293b;
+    --card: rgba(255,255,255,0.08);
+    --text:#e5e7eb; --cardText:#e5e7eb;
+    --accent:#ffd54f;
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    color:var(--text);
+    overflow-x:hidden;
+  }
+
+  /* Animated gradient background */
+  .bg-animated{
+    position:fixed; inset:0; z-index:-3;
+    background: linear-gradient(135deg, var(--bg1), var(--bg2));
+    background-size: 200% 200%;
+    animation: grad 18s ease-in-out infinite;
+  }
+  @keyframes grad{
+    0%{background-position:0% 0%}
+    50%{background-position:100% 100%}
+    100%{background-position:0% 0%}
+  }
+
+  /* Particle canvas behind content */
+  #particles{ position:fixed; inset:0; z-index:-2; pointer-events:none; }
+
+  header{ text-align:center; padding:34px 16px 6px; }
+  h1{
+    margin:0 0 10px 0;
+    font-weight:900;
+    font-size: clamp(28px, 4vw, 44px);
+    text-shadow: 0 6px 18px rgba(0,0,0,.25);
+  }
+  .controls{
+    display:flex; gap:12px; justify-content:center; flex-wrap:wrap;
+    margin:10px 0 0;
+  }
+  button{
+    border:none; color:var(--cardText); background: rgba(255,255,255,0.22);
+    padding:10px 14px; border-radius:12px; font-weight:700; cursor:pointer;
+    backdrop-filter:saturate(160%) blur(4px); box-shadow: var(--shadow);
+    transition: transform .12s ease, background .2s ease, opacity .2s ease;
+  }
+  .dark button{ background: rgba(255,255,255,0.14); }
+  button:hover{ transform: translateY(-1px) scale(1.02); background: rgba(255,255,255,0.30);}
+  button:active{ transform: translateY(0) scale(.98);}
+
+  .grid{ display:flex; justify-content:center; padding: 18px 16px 40px; }
+  .card{
+    position:relative; width:min(560px, 94vw);
+    padding:22px 22px 26px; border-radius:18px; background: var(--card);
+    box-shadow: var(--shadow); overflow:hidden; backdrop-filter:saturate(160%) blur(8px);
+  }
+  .label{
+    font-size: clamp(16px, 2.2vw, 22px); font-weight:900; margin-bottom:12px; text-align:center; color:var(--cardText);
+  }
+  .time{
+    font-variant-numeric: tabular-nums;
+    font-weight:900; font-size: clamp(28px, 4vw, 40px);
+    text-align:center; color: var(--accent);
+    text-shadow: 0 0 12px rgba(0,0,0,.55);
+    transition: transform .18s ease;
+  }
+  .time.updated{ transform: scale(1.05); }
+
+  /* Progress bar */
+  .progress-wrap{ margin:18px auto 6px; width:92%; }
+  .progress-track{ height:12px; border-radius:999px; background: rgba(255,255,255,.25); overflow:hidden; }
+  .progress-bar{ height:100%; width:0%; background: linear-gradient(90deg,#34d399,#06b6d4); transition: width .6s ease; }
+
+  /* Quotes */
+  .quote{ text-align:center; margin-top:12px; opacity:.9; font-style:italic; }
+
+  /* Mask: click-to-reveal or scratch */
+  .mask{
+    position:absolute; inset:0; display:grid; place-items:center; text-align:center;
+    background: rgba(0,0,0,0.80); color:#fff; backdrop-filter: blur(10px); z-index:2;
+  }
+  .mask .inner{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .scratchWrap{ position:absolute; inset:0; z-index:3; display:none; }
+  #scratchCanvas{ width:100%; height:100%; display:block; }
+
+  footer{ text-align:center; opacity:.75; margin:10px 0 24px; font-size:.95em; }
+
+  /* Celebration canvas on top */
+  #confetti, #emojiRain{ position:fixed; inset:0; pointer-events:none; z-index:10; }
+</style>
 </head>
-<body>
-  <header>
-    <h1>⏳ Countdown Until I Return</h1>
-    <div class="controls">
-      <button id="revealAllBtn">🔍 Reveal Timer</button>
-      <button id="toggleFormatBtn">🔁 Toggle Format</button>
+<body class="light">
+<div class="bg-animated"></div>
+<canvas id="particles"></canvas>
+<canvas id="confetti"></canvas>
+<canvas id="emojiRain"></canvas>
+
+<header>
+  <h1>⏳ Countdown Until I Return</h1>
+  <div class="controls">
+    <button id="revealBtn">🔍 Reveal Timer</button>
+    <button id="scratchBtn">🪄 Scratch-to-Reveal</button>
+    <button id="toggleFormatBtn">🔁 Toggle Format</button>
+    <button id="themeBtn">🌓 Theme</button>
+  </div>
+</header>
+
+<section class="grid">
+  <article class="card" id="card">
+    <div class="label">Return date (Target: Sept 12)</div>
+
+    <!-- progress -->
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+      <div style="text-align:center; margin-top:6px; font-weight:700;" id="progressText"></div>
     </div>
-  </header>
 
-  <section class="grid">
-    <article class="card" id="card2">
-      <div class="label">Return date (Target: Sept 12)</div>
-      <div id="countdown2" class="time">--</div>
-      <div class="mask" id="mask2">
-        <div>
-          <p><strong>Hidden</strong> until revealed 😄</p>
-          <button class="revealBtn" data-mask="mask2">Reveal</button>
-          <p class="small">Click to show live countdown</p>
-        </div>
+    <div id="countdown" class="time">--</div>
+    <div class="quote" id="quote">“Good things take time.”</div>
+
+    <!-- overlays -->
+    <div class="mask" id="mask">
+      <div class="inner">
+        <div style="font-weight:800;font-size:1.1em">Hidden until reveal 😄</div>
+        <div>Click <strong>Reveal Timer</strong> or try <strong>Scratch-to-Reveal</strong>.</div>
       </div>
-    </article>
-  </section>
+    </div>
+    <div class="scratchWrap" id="scratchWrap">
+      <canvas id="scratchCanvas"></canvas>
+    </div>
+  </article>
+</section>
 
-  <footer>I will be back soon!</footer>
+<footer>I’ll be back soon! — auto-updates every second</footer>
 
-  <script>
-    const date2 = new Date("Sep 12, 2025 00:00:00").getTime();
-    let compactFormat = false;
-    let intervalId;
+<script>
+  /* =================== Config =================== */
+  const TARGET_DATE = new Date("Sep 12, 2025 00:00:00").getTime();
+  // Start date for progress bar (change this if you like!)
+  const START_DATE = new Date("Jun 15, 2025 00:00:00").getTime();
 
-    function fmt(distance){
-      const days = Math.floor(distance / (1000*60*60*24));
-      const hours = Math.floor((distance % (1000*60*60*24)) / (1000*60*60));
-      const minutes = Math.floor((distance % (1000*60*60)) / (1000*60));
-      const seconds = Math.floor((distance % (1000*60)) / 1000);
+  /* ========== Countdown / Progress / Quotes ========== */
+  let compactFormat = false;
+  const elTime = document.getElementById("countdown");
+  const elBar  = document.getElementById("progressBar");
+  const elProgText = document.getElementById("progressText");
+  const elQuote = document.getElementById("quote");
+  const quotes = [
+    "“Good things take time.”",
+    "“One day closer.”",
+    "“Patience is a superpower.”",
+    "“Keep going — you’re almost there.”",
+    "“Every second counts.”"
+  ];
+  let quoteIdx = 0;
+  setInterval(()=>{ quoteIdx=(quoteIdx+1)%quotes.length; elQuote.textContent = quotes[quoteIdx]; }, 7000);
 
-      if(compactFormat){
-        const totalDays = Math.floor(distance / (1000*60*60*24));
-        const remHours = Math.floor((distance % (1000*60*60*24)) / (1000*60*60));
-        return `${totalDays} days • ${remHours}h`;
-      }else{
-        return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+  function fmt(distance){
+    const days = Math.floor(distance / (1000*60*60*24));
+    const hours = Math.floor((distance % (1000*60*60*24)) / (1000*60*60));
+    const minutes = Math.floor((distance % (1000*60*60)) / (1000*60));
+    const seconds = Math.floor((distance % (1000*60)) / 1000);
+    if(compactFormat){
+      const totalDays = Math.floor(distance / (1000*60*60*24));
+      const remHours = Math.floor((distance % (1000*60*60*24)) / (1000*60*60));
+      return `${totalDays} days • ${remHours}h`;
+    } else {
+      return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    }
+  }
+
+  let finished = false;
+  function tick(){
+    const now = Date.now();
+    const dist = TARGET_DATE - now;
+    if(dist <= 0 && !finished){
+      finished = true;
+      elTime.textContent = "🎉 It's time!";
+      celebrate();
+    }
+    if(dist > 0){
+      elTime.textContent = fmt(dist);
+      elTime.classList.add("updated");
+      setTimeout(()=>elTime.classList.remove("updated"), 180);
+    }
+
+    // progress bar
+    const total = TARGET_DATE - START_DATE;
+    const done  = Math.max(0, Math.min(total, now - START_DATE));
+    const pct   = Math.max(0, Math.min(100, (done/total)*100));
+    elBar.style.width = pct.toFixed(1) + "%";
+    elProgText.textContent = `Progress: ${pct.toFixed(1)}%`;
+  }
+  setInterval(tick, 1000); tick();
+
+  document.getElementById("toggleFormatBtn").onclick = ()=>{ compactFormat = !compactFormat; tick(); };
+
+  /* =================== Theme Toggle =================== */
+  const themeBtn = document.getElementById("themeBtn");
+  themeBtn.onclick = ()=>{
+    document.body.classList.toggle("dark");
+  };
+
+  /* =================== Reveal / Scratch =================== */
+  const mask = document.getElementById("mask");
+  const scratchWrap = document.getElementById("scratchWrap");
+  const scratchCanvas = document.getElementById("scratchCanvas");
+  const revealBtn = document.getElementById("revealBtn");
+  const scratchBtn = document.getElementById("scratchBtn");
+
+  revealBtn.onclick = ()=>{ mask.style.display="none"; scratchWrap.style.display="none"; };
+  scratchBtn.onclick = ()=>{
+    mask.style.display="none";
+    scratchWrap.style.display="block";
+    initScratch();
+  };
+
+  function initScratch(){
+    const c = scratchCanvas, ctx = c.getContext("2d");
+    const rect = scratchWrap.getBoundingClientRect();
+    c.width = rect.width * devicePixelRatio; c.height = rect.height * devicePixelRatio;
+    c.style.width = rect.width + "px"; c.style.height = rect.height + "px";
+    ctx.scale(devicePixelRatio, devicePixelRatio);
+    // cover with color
+    ctx.fillStyle = "rgba(20,20,20,0.92)";
+    ctx.fillRect(0,0,rect.width,rect.height);
+    ctx.globalCompositeOperation = "destination-out";
+
+    let scratching = false;
+    const brush = 26;
+    function draw(e){
+      if(!scratching) return;
+      const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+      const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
+      ctx.beginPath(); ctx.arc(x,y,brush,0,Math.PI*2); ctx.fill();
+    }
+    scratchWrap.onmousedown = (e)=>{ scratching=true; draw(e); };
+    scratchWrap.onmousemove = draw;
+    scratchWrap.onmouseup = ()=> scratching=false;
+    scratchWrap.onmouseleave = ()=> scratching=false;
+    scratchWrap.ontouchstart = (e)=>{ scratching=true; draw(e); };
+    scratchWrap.ontouchmove = draw;
+    scratchWrap.ontouchend = ()=> scratching=false;
+
+    // auto-hide when ~60% cleared
+    function checkClear(){
+      try{
+        const img = ctx.getImageData(0,0,Math.min(600,rect.width),Math.min(300,rect.height)).data;
+        let clear = 0;
+        for(let i=3;i<img.length;i+=4){ if(img[i]===0) clear++; }
+        const pct = clear / (img.length/4);
+        if(pct>0.6){ scratchWrap.style.display="none"; }
+      }catch(e){}
+    }
+    setInterval(checkClear, 800);
+  }
+
+  /* =================== Particles Background =================== */
+  (function particles(){
+    const canvas = document.getElementById("particles"), ctx = canvas.getContext("2d");
+    let w,h; function resize(){ w=canvas.width=innerWidth; h=canvas.height=innerHeight; }
+    resize(); addEventListener("resize", resize);
+    const N = 60; const p = [];
+    for(let i=0;i<N;i++){
+      p.push({x:Math.random()*w,y:Math.random()*h,r:1+Math.random()*3, vx:(Math.random()-0.5)*0.4, vy:(Math.random()-0.5)*0.4, a:0.18+Math.random()*0.25});
+    }
+    function step(){
+      ctx.clearRect(0,0,w,h);
+      for(const s of p){
+        s.x+=s.vx; s.y+=s.vy;
+        if(s.x<-10) s.x=w+10; if(s.x>w+10) s.x=-10;
+        if(s.y<-10) s.y=h+10; if(s.y>h+10) s.y=-10;
+        ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+        ctx.fillStyle = `rgba(255,255,255,${s.a})`; ctx.fill();
       }
+      requestAnimationFrame(step);
     }
+    step();
+  })();
 
-    function update(elId, target){
-      const el = document.getElementById(elId);
-      const now = new Date().getTime();
-      const dist = target - now;
-      if (dist < 0){
-        el.textContent = "🎉 It's time!";
-        return;
-      }
-      el.textContent = fmt(dist);
-      el.classList.add('updated');
-      setTimeout(()=>el.classList.remove('updated'), 180);
+  /* =================== Celebration: confetti + emoji rain + sound =================== */
+  function celebrate(){
+    confettiBurst(1000, 160);    // confetti particles, duration ms
+    emojiRain("🎉✨🎊❤️🚗✈️", 2200); // emoji string, duration ms
+    playDing();
+  }
+
+  function confettiBurst(duration=1200, count=120){
+    const c = document.getElementById("confetti"), ctx = c.getContext("2d");
+    let w,h; function resize(){ w=c.width=innerWidth; h=c.height=innerHeight; } resize();
+    const flakes=[];
+    for(let i=0;i<count;i++){
+      flakes.push({x:Math.random()*w, y:-Math.random()*h*0.3, r:4+Math.random()*4, vx:(Math.random()-0.5)*3, vy:2+Math.random()*3, rot:Math.random()*Math.PI, vr:(Math.random()-0.5)*0.2});
     }
+    const start=performance.now();
+    (function frame(now){
+      const t = now-start;
+      ctx.clearRect(0,0,w,h);
+      flakes.forEach(f=>{
+        f.x+=f.vx; f.y+=f.vy; f.rot+=f.vr;
+        ctx.save(); ctx.translate(f.x,f.y); ctx.rotate(f.rot);
+        ctx.fillStyle = `hsl(${(f.x/w)*360},90%,55%)`;
+        ctx.fillRect(-f.r, -f.r, f.r*2, f.r*2);
+        ctx.restore();
+      });
+      if(t<duration) requestAnimationFrame(frame); else ctx.clearRect(0,0,w,h);
+    })(performance.now());
+  }
 
-    function tick(){ update("countdown2", date2); }
+  function emojiRain(chars="🎉✨", duration=2000){
+    const c = document.getElementById("emojiRain"), ctx = c.getContext("2d");
+    let w,h; function resize(){ w=c.width=innerWidth; h=c.height=innerHeight; } resize();
+    const arr = chars.split("");
+    const drops = Array.from({length:40}, ()=>({
+      x: Math.random()*w, y: -Math.random()*h*0.2, vy: 2+Math.random()*3, emoji: arr[Math.floor(Math.random()*arr.length)], size: 24+Math.random()*22
+    }));
+    const start=performance.now();
+    ctx.font = "30px system-ui";
+    (function frame(now){
+      const t=now-start; ctx.clearRect(0,0,w,h);
+      drops.forEach(d=>{ d.y+=d.vy; ctx.font = `${d.size}px system-ui`; ctx.fillText(d.emoji,d.x,d.y); });
+      if(t<duration) requestAnimationFrame(frame); else ctx.clearRect(0,0,w,h);
+    })(performance.now());
+  }
 
-    function start(){
-      if(intervalId) clearInterval(intervalId);
-      tick();
-      intervalId = setInterval(tick, 1000);
-    }
-
-    document.getElementById('toggleFormatBtn').addEventListener('click', ()=>{
-      compactFormat = !compactFormat;
-      tick();
-    });
-
-    function reveal(maskId){ document.getElementById(maskId).style.display='none'; }
-    document.querySelectorAll('.revealBtn').forEach(btn=>{
-      btn.addEventListener('click', ()=>reveal(btn.dataset.mask));
-    });
-    document.getElementById('revealAllBtn').addEventListener('click', ()=>{ reveal('mask2'); });
-
-    start();
-  </script>
+  function playDing(){
+    try{
+      const a = new (window.AudioContext||window.webkitAudioContext)();
+      const o = a.createOscillator(); const g = a.createGain();
+      o.type="sine"; o.frequency.setValueAtTime(880,a.currentTime);
+      g.gain.setValueAtTime(0.001,a.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.3,a.currentTime+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+0.8);
+      o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime+0.8);
+    }catch(e){}
+  }
+</script>
 </body>
 </html>
