@@ -1,102 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Countdown to Yousif’s Return</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Countdown Until I Return</title>
   <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      text-align: center;
-      background: linear-gradient(135deg, #4facfe, #00f2fe);
-      color: #fff;
-      margin: 0;
-      padding: 0;
+    :root{
+      --bg1:#4facfe;
+      --bg2:#00f2fe;
+      --card: rgba(255,255,255,0.14);
+      --text:#ffffff;
+      --accent:#ffeb3b;
+      --shadow:0 10px 30px rgba(0,0,0,0.25);
+      --blur: blur(10px);
     }
-    h1 {
-      margin: 40px 0 20px;
-      font-size: 2.5em;
-      text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--text);
+      background: linear-gradient(135deg, var(--bg1), var(--bg2)) fixed;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:flex-start;
+      gap:24px;
     }
-    .countdowns {
-      display: flex;
-      justify-content: center;
-      gap: 40px;
-      flex-wrap: wrap;
-      margin-top: 30px;
+    header{
+      width:100%;
+      padding:32px 16px 0;
+      text-align:center;
     }
-    .countdown {
-      background: rgba(0,0,0,0.4);
-      padding: 20px 30px;
-      border-radius: 15px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      min-width: 250px;
+    h1{
+      margin:0;
+      font-weight:800;
+      letter-spacing:.5px;
+      text-shadow: 2px 6px 18px rgba(0,0,0,.25);
+      font-size: clamp(28px, 4vw, 44px);
     }
-    .label {
-      font-size: 1.2em;
-      font-weight: bold;
-      margin-bottom: 15px;
-      display: block;
+    .controls{
+      display:flex;
+      gap:12px;
+      justify-content:center;
+      flex-wrap:wrap;
+      margin-top:14px;
     }
-    .time {
-      font-size: 2em;
-      font-weight: bold;
-      letter-spacing: 2px;
-      color: #ffeb3b;
-      text-shadow: 0 0 10px #000;
-      transition: transform 0.2s ease;
+    button{
+      appearance:none;
+      border:none;
+      background: rgba(255,255,255,0.18);
+      color:var(--text);
+      padding:10px 14px;
+      border-radius:12px;
+      font-weight:600;
+      cursor:pointer;
+      backdrop-filter:saturate(160%) blur(4px);
+      box-shadow: var(--shadow);
+      transition: transform .12s ease, background .2s ease;
     }
-    .time.updated {
-      transform: scale(1.1);
+    button:hover{ transform: translateY(-2px) scale(1.02); background: rgba(255,255,255,0.28);}
+    button:active{ transform: translateY(0) scale(.98);}
+    .grid{
+      display:flex;
+      flex-wrap:wrap;
+      gap:22px;
+      justify-content:center;
+      padding: 8px 16px 40px;
+      width:min(1100px, 100%);
     }
+    .card{
+      position:relative;
+      width:min(480px, 92vw);
+      padding:22px 22px 26px;
+      border-radius:18px;
+      background: var(--card);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      backdrop-filter:saturate(160%) blur(6px);
+    }
+    .label{
+      font-size: clamp(16px, 2.2vw, 22px);
+      font-weight:800;
+      margin-bottom:10px;
+      text-align:center;
+    }
+    .time{
+      font-variant-numeric: tabular-nums;
+      font-weight:900;
+      letter-spacing:1.5px;
+      font-size: clamp(24px, 3.2vw, 36px);
+      text-align:center;
+      color: var(--accent);
+      text-shadow: 0 0 12px rgba(0,0,0,.55);
+      transition: transform .18s ease;
+    }
+    .time.updated{ transform: scale(1.05); }
+    .mask{
+      position:absolute;
+      inset:0;
+      display:grid;
+      place-items:center;
+      background: linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.45));
+      backdrop-filter: var(--blur);
+      gap:10px;
+      text-align:center;
+    }
+    .mask p{ margin:0 14px; opacity:.9; }
+    .small{ opacity:.8; font-size:.9em; }
+    footer{opacity:.75; margin-bottom:22px; font-size:.9em;}
   </style>
 </head>
 <body>
-  <h1>⏳ Countdown to Yousif’s Return</h1>
-
-  <div class="countdowns">
-    <div class="countdown">
-      <span class="label">Time until Yousif returns to Michigan</span>
-      <span id="countdown1" class="time"></span>
+  <header>
+    <h1>⏳ Countdown Until I Return</h1>
+    <div class="controls">
+      <button id="revealAllBtn">🔍 Reveal Timers</button>
+      <button id="toggleFormatBtn">🔁 Toggle Format</button>
+      <button id="pauseBtn">⏸️ Pause</button>
+      <button id="resumeBtn" style="display:none;">▶️ Resume</button>
     </div>
+  </header>
 
-    <div class="countdown">
-      <span class="label">Sadly if extended</span>
-      <span id="countdown2" class="time"></span>
-    </div>
-  </div>
+  <section class="grid">
+    <article class="card" id="card1">
+      <div class="label">Time until I return (Target: Sept 5)</div>
+      <div id="countdown1" class="time">--</div>
+      <div class="mask" id="mask1">
+        <div>
+          <p><strong>Hidden</strong> to build suspense 😄</p>
+          <button class="revealBtn" data-mask="mask1">Reveal</button>
+          <p class="small">Click to show live countdown</p>
+        </div>
+      </div>
+    </article>
+
+    <article class="card" id="card2">
+      <div class="label">Sadly if extended (Target: Sept 12)</div>
+      <div id="countdown2" class="time">--</div>
+      <div class="mask" id="mask2">
+        <div>
+          <p><strong>Hidden</strong> just in case...</p>
+          <button class="revealBtn" data-mask="mask2">Reveal</button>
+          <p class="small">Click to show live countdown</p>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <footer>Made with ❤️ — auto-updates every second</footer>
 
   <script>
-    function updateCountdown(targetDate, elementId) {
-      const now = new Date().getTime();
-      const distance = targetDate - now;
-      const el = document.getElementById(elementId);
-
-      if (distance < 0) {
-        el.innerHTML = "🎉 Yousif has returned!";
-        return;
-      }
-
-      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-      el.innerHTML = days + "d " + hours + "h " + minutes + "m " + seconds + "s";
-
-      // Add small animation when updating
-      el.classList.add("updated");
-      setTimeout(() => el.classList.remove("updated"), 200);
-    }
-
-    // Set target dates
+    // ====== Timer Logic ======
     const date1 = new Date("Sep 5, 2025 00:00:00").getTime();
     const date2 = new Date("Sep 12, 2025 00:00:00").getTime();
 
-    // Update every second
-    setInterval(function() {
-      updateCountdown(date1, "countdown1");
-      updateCountdown(date2, "countdown2");
-    }, 1000);
+    let compactFormat = false; // false: D H M S, true: total days + hours
+    let paused = false;
+    let intervalId;
+
+    function fmt(distance){
+      const days = Math.floor(distance / (1000*60*60*24));
+      const hours = Math.floor((distance % (1000*60*60*24)) / (1000*60*60));
+      const minutes = Math.floor((distance % (1000*60*60)) / (1000*60));
+      const seconds = Math.floor((distance % (1000*60)) / 1000);
+
+      if(compactFormat){
+        const totalDays = Math.floor(distance / (1000*60*60*24));
+        const remHours = Math.floor((distance % (1000*60*60*24)) / (1000*60*60));
+        return `${totalDays} days • ${remHours}h`;
+      }else{
+        return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+      }
+    }
+
+    function update(elId, target){
+      const el = document.getElementById(elId);
+      const now = new Date().getTime();
+      const dist = target - now;
+      if (dist < 0){
+        el.textContent = "🎉 It’s time!";
+        return;
+      }
+      el.textContent = fmt(dist);
+      el.classList.add('updated');
+      setTimeout(()=>el.classList.remove('updated'), 180);
+    }
+
+    function tick(){
+      if(paused) return;
+      update("countdown1", date1);
+      update("countdown2", date2);
+    }
+
+    function start(){
+      if(intervalId) clearInterval(intervalId);
+      tick();
+      intervalId = setInterval(tick, 1000);
+    }
+
+    // ====== UI Controls ======
+    document.getElementById('toggleFormatBtn').addEventListener('click', ()=>{
+      compactFormat = !compactFormat;
+      tick();
+    });
+
+    document.getElementById('pauseBtn').addEventListener('click', ()=>{
+      paused = true;
+      document.getElementById('pauseBtn').style.display = 'none';
+      document.getElementById('resumeBtn').style.display = 'inline-block';
+    });
+
+    document.getElementById('resumeBtn').addEventListener('click', ()=>{
+      paused = false;
+      document.getElementById('resumeBtn').style.display = 'none';
+      document.getElementById('pauseBtn').style.display = 'inline-block';
+      tick();
+    });
+
+    // Reveal logic
+    function reveal(maskId){ const m = document.getElementById(maskId); if(m) m.style.display='none'; }
+    document.querySelectorAll('.revealBtn').forEach(btn=>{
+      btn.addEventListener('click', ()=>reveal(btn.dataset.mask));
+    });
+    document.getElementById('revealAllBtn').addEventListener('click', ()=>{ reveal('mask1'); reveal('mask2'); });
+
+    // Start timers
+    start();
   </script>
 </body>
 </html>
