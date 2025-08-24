@@ -2,54 +2,77 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Countdown Until I Return</title>
+  <title>Countdown to Yousif’s Return</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       text-align: center;
-      background: #f0f4f8;
-      color: #333;
-      padding: 50px;
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
+      color: #fff;
+      margin: 0;
+      padding: 0;
     }
     h1 {
-      margin-bottom: 20px;
+      margin: 40px 0 20px;
+      font-size: 2.5em;
+      text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+    }
+    .countdowns {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
+      margin-top: 30px;
     }
     .countdown {
-      font-size: 24px;
-      margin: 20px 0;
-      padding: 15px;
-      background: #fff;
-      border-radius: 10px;
-      display: inline-block;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      background: rgba(0,0,0,0.4);
+      padding: 20px 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      min-width: 250px;
     }
     .label {
+      font-size: 1.2em;
       font-weight: bold;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
       display: block;
+    }
+    .time {
+      font-size: 2em;
+      font-weight: bold;
+      letter-spacing: 2px;
+      color: #ffeb3b;
+      text-shadow: 0 0 10px #000;
+      transition: transform 0.2s ease;
+    }
+    .time.updated {
+      transform: scale(1.1);
     }
   </style>
 </head>
 <body>
-  <h1>⏳Return Countdown</h1>
+  <h1>⏳ Countdown to Yousif’s Return</h1>
 
-  <div class="countdown">
-    <span class="label">Time until Yousif returns to Michigan</span>
-    <span id="countdown1"></span>
-  </div>
+  <div class="countdowns">
+    <div class="countdown">
+      <span class="label">Time until Yousif returns to Michigan</span>
+      <span id="countdown1" class="time"></span>
+    </div>
 
-  <div class="countdown">
-    <span class="label">Sadly if extended</span>
-    <span id="countdown2"></span>
+    <div class="countdown">
+      <span class="label">Sadly if extended</span>
+      <span id="countdown2" class="time"></span>
+    </div>
   </div>
 
   <script>
     function updateCountdown(targetDate, elementId) {
       const now = new Date().getTime();
       const distance = targetDate - now;
+      const el = document.getElementById(elementId);
 
       if (distance < 0) {
-        document.getElementById(elementId).innerHTML = "🎉 Yousif has returned!";
+        el.innerHTML = "🎉 Yousif has returned!";
         return;
       }
 
@@ -58,8 +81,11 @@
       const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-      document.getElementById(elementId).innerHTML =
-        days + "d " + hours + "h " + minutes + "m " + seconds + "s ";
+      el.innerHTML = days + "d " + hours + "h " + minutes + "m " + seconds + "s";
+
+      // Add small animation when updating
+      el.classList.add("updated");
+      setTimeout(() => el.classList.remove("updated"), 200);
     }
 
     // Set target dates
