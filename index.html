@@ -1,13 +1,4 @@
 
-> You don’t need to manually create a “scores” collection — the first saved score will create it.
-
----
-
-## 🧩 Full `index.html` (drop-in)
-
-> Replace your existing file with this. It uses your **exact** Firebase config and v12.2.1 CDN modules.  
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -200,20 +191,25 @@ async function renderLB(){
 
  list.innerHTML = "<li>Loading…</li>";
  try{
-   const qTop = query(scoresCol, orderBy("score","desc"), orderBy("createdAt","asc"), limit(10));
-   const snap = await getDocs(qTop);
-   const rows = [];
-   snap.forEach(doc=>{
-     const d = doc.data();
-     rows.push({
-       name: (d.name || "Anonymous"),
-       score: (d.score || 0),
-       createdAt: d.createdAt?.toDate ? d.createdAt.toDate() : new Date()
-     });
-   });
+   // BEFORE
+// const qTop = query(scoresCol, orderBy("score","desc"), orderBy("createdAt","asc"), limit(10));
 
-   if(rows.length === 0){
-     list.innerHTML = "<li>No scores yet. Be the first! 🎯</li>";
+// AFTER (no composite index required)
+const qTop = query(scoresCol, orderBy("score","desc"), limit(10));
+const snap = await getDocs(qTop);
+
+// Optional tie-break in JS (so equal scores are oldest-first)
+const rows = [];
+snap.forEach(doc => {
+  const d = doc.data();
+  rows.push({
+    name: d.name || "Anonymous",
+    score: d.score || 0,
+    createdAt: d.createdAt?.toDate ? d.createdAt.toDate() : new Date()
+  });
+});
+// client-side tie-breaker
+rows.sort((a,b) => b.score - a.score || a.createdAt - b.createdAt);
    } else {
      list.innerHTML = "";
      rows.forEach((row, i)=>{
