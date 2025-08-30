@@ -76,7 +76,9 @@
   }
   #scratchCanvas{ width:100%; height:100%; display:block; }
 
-  footer{ text-align:center; opacity:.85; margin:10px 0 24px; font-size:1rem; font-weight:700; }
+  footer{ text-align:center; opacity:.85; margin:10px 0 10px; font-size:1rem; font-weight:700; }
+  #dailyQuote{ text-align:center; margin:0 12px 28px; font-style:italic; opacity:0.9; }
+
   #confetti, #emojiRain{ position:fixed; inset:0; pointer-events:none; z-index:10; }
 </style>
 </head>
@@ -123,7 +125,7 @@
 </section>
 
 <footer>I’ll be back soon! Meow Meow Meow</footer>
-  <div id="dailyQuote" style="text-align:center; margin-bottom:30px; font-style:italic; opacity:0.9;"></div>
+<div id="dailyQuote"></div>
 
 <script>
   /* =================== Config =================== */
@@ -131,8 +133,7 @@
   const START_DATE  = new Date("Jun 15, 2025 00:00:00").getTime(); // progress bar start
 
   // Scratch config
-  const REVEAL_THRESHOLD = 0.95;   // require 90% cleared to auto-hide
-  const MIN_CHECK_THRESHOLD = 0.05; // (reserved if you want to ignore first 5% scratches)
+  const REVEAL_THRESHOLD = 0.90;   // require 90% cleared to auto-hide
 
   /* ========== Countdown / Progress / Messages ========== */
   let compactFormat = false, finished = false;
@@ -150,27 +151,26 @@
   }
 
   function updateMessage(dist){
-  const twoWeeks = 14 * 24 * 60 * 60 * 1000;
-  if (dist > twoWeeks) {
-    elMsg.textContent = "Just a few weeks left";
-  } else if (dist > 0) {
-    // calculate in weeks + days
-    const days = Math.floor(dist / (1000*60*60*24));
-    const weeks = Math.floor(days / 7);
-    const remDays = days % 7;
-
-    let msg = "Just ";
-    if (weeks > 0) {
-      msg += weeks + (weeks === 1 ? " week" : " weeks");
-      if (remDays > 0) msg += " and " + remDays + (remDays === 1 ? " day" : " days");
+    const twoWeeks = 14 * 24 * 60 * 60 * 1000;
+    if (dist > twoWeeks) {
+      elMsg.textContent = "Just a few weeks left";
+    } else if (dist > 0) {
+      // weeks + days
+      const days = Math.floor(dist / (1000*60*60*24));
+      const weeks = Math.floor(days / 7);
+      const remDays = days % 7;
+      let msg = "Just ";
+      if (weeks > 0) {
+        msg += weeks + (weeks === 1 ? " week" : " weeks");
+        if (remDays > 0) msg += " and " + remDays + (remDays === 1 ? " day" : " days");
+      } else {
+        msg += days + (days === 1 ? " day" : " days");
+      }
+      elMsg.textContent = msg + " left";
     } else {
-      msg += days + (days === 1 ? " day" : " days");
+      elMsg.textContent = "I am back! 🎉";
     }
-    elMsg.textContent = msg + " left";
-  } else {
-    elMsg.textContent = "I am back! 🎉";
   }
-}
 
   function tick(){
     const now = Date.now();
@@ -368,25 +368,29 @@
       g.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+0.8);
       o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime+0.8);
     }catch(e){}
-    // ========== Daily Motivational Quote ==========
-const quotes = [
-  "Stay strong — every day is progress. 💪",
-  "Patience is the companion of wisdom. ⏳",
-  "One step closer to home. 🏠",
-  "Good things are coming. ✨",
-  "The wait makes the return sweeter. ❤️",
-  "Keep going — you're doing amazing. 🚀",
-  "Almost there! 🙌"
-];
+  }
 
-function showDailyQuote(){
-  const today = new Date().getDate(); // 1–31
-  const idx = today % quotes.length;  // rotate by day
-  document.getElementById("dailyQuote").textContent = quotes[idx];
-}
-showDailyQuote();
+  /* ========== Daily Motivational Quote ========== */
+  const quotes = [
+    "Stay strong, every day is progress.",
+    "Patience is the companion of wisdom.",
+    "One step closer to home.",
+    "Good things are coming.",
+    "The wait makes the return sweeter.",
+    "Keep going — you're doing amazing.",
+    "Almost there!"
+  ];
+  function showDailyQuote(){
+    const today = new Date().getDate(); // 1–31
+    const idx = today % quotes.length;  // rotate by day
+    const el = document.getElementById("dailyQuote");
+    if (el) el.textContent = quotes[idx];
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", showDailyQuote);
+  } else {
+    showDailyQuote();
   }
 </script>
-  
 </body>
 </html>
