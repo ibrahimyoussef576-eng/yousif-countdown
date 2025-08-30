@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,15 +6,15 @@
 <title>Countdown Until I Return</title>
 <style>
 :root{
- --bg1:#4facfe; --bg2:#00f2fe;
- --card: rgba(255,255,255,0.16);
- --text:#0f172a; --cardText:#ffffff;
- --accent:#ffeb3b; --shadow:0 10px 30px rgba(0,0,0,0.25);
+  --bg1:#4facfe; --bg2:#00f2fe;
+  --card: rgba(255,255,255,0.16);
+  --text:#0f172a; --cardText:#ffffff;
+  --accent:#ffeb3b; --shadow:0 10px 30px rgba(0,0,0,0.25);
 }
 .dark{
- --bg1:#0f172a; --bg2:#1e293b;
- --card: rgba(255,255,255,0.08);
- --text:#e5e7eb; --cardText:#e5e7eb; --accent:#ffd54f;
+  --bg1:#0f172a; --bg2:#1e293b;
+  --card: rgba(255,255,255,0.08);
+  --text:#e5e7eb; --cardText:#e5e7eb; --accent:#ffd54f;
 }
 *{box-sizing:border-box}
 html,body{height:100%}
@@ -28,19 +27,19 @@ header{ text-align:center; padding:34px 16px 6px; }
 h1{ margin:0 0 10px; font-weight:900; font-size: clamp(28px, 4vw, 44px); text-shadow: 0 6px 18px rgba(0,0,0,.25); }
 .controls{ display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:10px; }
 button{
- border:none; color:var(--cardText); background: rgba(255,255,255,0.22);
- padding:10px 14px; border-radius:12px; font-weight:700; cursor:pointer;
- backdrop-filter:saturate(160%) blur(4px); box-shadow: var(--shadow);
- transition: transform .12s ease, background .2s ease;
+  border:none; color:var(--cardText); background: rgba(255,255,255,0.22);
+  padding:10px 14px; border-radius:12px; font-weight:700; cursor:pointer;
+  backdrop-filter:saturate(160%) blur(4px); box-shadow: var(--shadow);
+  transition: transform .12s ease, background .2s ease;
 }
 .dark button{ background: rgba(255,255,255,0.14); }
 button:hover{ transform: translateY(-1px) scale(1.02); background: rgba(255,255,255,0.30); }
 
 .grid{ display:flex; justify-content:center; padding: 18px 16px 40px; }
 .card{
- position:relative; width:min(560px, 94vw);
- padding:22px 22px 26px; border-radius:18px; background: var(--card);
- box-shadow: var(--shadow); overflow:hidden; backdrop-filter:saturate(160%) blur(8px);
+  position:relative; width:min(560px, 94vw);
+  padding:22px 22px 26px; border-radius:18px; background: var(--card);
+  box-shadow: var(--shadow); overflow:hidden; backdrop-filter:saturate(160%) blur(8px);
 }
 .label{ font-size: clamp(16px, 2.2vw, 22px); font-weight:900; margin-bottom:12px; text-align:center; color:var(--cardText); }
 .time{ font-variant-numeric: tabular-nums; font-weight:900; font-size: clamp(28px, 4vw, 40px); text-align:center; color: var(--accent); text-shadow: 0 0 12px rgba(0,0,0,.55); transition: transform .18s ease; }
@@ -87,38 +86,38 @@ footer{ text-align:center; opacity:.85; margin:10px 0 10px; font-size:1rem; font
 <canvas id="emojiRain"></canvas>
 
 <header>
-<h1>⏳ Countdown Until I Return</h1>
-<div class="controls">
- <button id="revealBtn">🔍 Reveal Timer</button>
- <button id="scratchBtn">🪄 Scratch-to-Reveal</button>
- <button id="toggleFormatBtn">🔁 Toggle Format</button>
- <button id="themeBtn">🌓 Theme</button>
- <button id="gameBtn">🎮 Mini Game</button>
-</div>
+  <h1>⏳ Countdown Until I Return</h1>
+  <div class="controls">
+    <button id="revealBtn">🔍 Reveal Timer</button>
+    <button id="scratchBtn">🪄 Scratch-to-Reveal</button>
+    <button id="toggleFormatBtn">🔁 Toggle Format</button>
+    <button id="themeBtn">🌓 Theme</button>
+    <button id="gameBtn">🎮 Mini Game</button>
+  </div>
 </header>
 
 <section class="grid">
-<article class="card" id="card">
- <div class="label">Return date (Target: Sept 12)</div>
+  <article class="card" id="card">
+    <div class="label">Return date (Target: Sept 12)</div>
 
- <div class="progress-wrap">
-   <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
-   <div style="text-align:center; margin-top:6px; font-weight:700;" id="progressText"></div>
- </div>
+    <div class="progress-wrap">
+      <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+      <div style="text-align:center; margin-top:6px; font-weight:700;" id="progressText"></div>
+    </div>
 
- <div id="countdown" class="time">--</div>
- <div class="msg" id="msg">I am almost back</div>
+    <div id="countdown" class="time">--</div>
+    <div class="msg" id="msg">I am almost back</div>
 
- <div class="mask" id="mask">
-   <div class="inner">
-     <div style="font-weight:800;font-size:1.1em">Hidden until reveal 😄</div>
-     <div>Tap <strong>Reveal Timer</strong> or try <strong>Scratch-to-Reveal</strong>.</div>
-   </div>
- </div>
- <div class="scratchWrap" id="scratchWrap">
-   <canvas id="scratchCanvas"></canvas>
- </div>
-</article>
+    <div class="mask" id="mask">
+      <div class="inner">
+        <div style="font-weight:800;font-size:1.1em">Hidden until reveal 😄</div>
+        <div>Tap <strong>Reveal Timer</strong> or try <strong>Scratch-to-Reveal</strong>.</div>
+      </div>
+    </div>
+    <div class="scratchWrap" id="scratchWrap">
+      <canvas id="scratchCanvas"></canvas>
+    </div>
+  </article>
 </section>
 
 <footer>I’ll be back soon! Meow Meow Meow</footer>
@@ -126,132 +125,157 @@ footer{ text-align:center; opacity:.85; margin:10px 0 10px; font-size:1rem; font
 
 <!-- Leaderboard -->
 <div id="leaderboard">
-<h3>🏆 Emoji Catch — Leaderboard (Top 10)</h3>
-<ol id="lbList"></ol>
-<div class="lb-meta" id="lbMeta"></div>
+  <h3>🏆 Emoji Catch — Leaderboard (Top 10)</h3>
+  <ol id="lbList"></ol>
+  <div class="lb-meta" id="lbMeta"></div>
 </div>
 
 <!-- Game modal -->
 <div class="modal" id="gameModal" aria-hidden="true">
-<div class="modalContent">
- <div class="modalHeader">
-   <strong>🎮 Emoji Catch — 30s</strong>
-   <div>
-     <button class="closeX nameBtn" id="setNameBtn">Set Name</button>
-     <button class="closeX" id="startGameBtn">Start</button>
-     <button class="closeX" id="closeGameBtn">×</button>
-   </div>
- </div>
- <div class="gameBar">
-   <div>Score: <span id="score">0</span></div>
-   <div>Time: <span id="time">30</span>s</div>
-   <div>Best: <span id="best">0</span></div>
- </div>
- <canvas id="gameCanvas"></canvas>
- <div class="gameHint">Move with ←/→ or mouse. On phone: drag left/right.</div>
-</div>
+  <div class="modalContent">
+    <div class="modalHeader">
+      <strong>🎮 Emoji Catch — 30s</strong>
+      <div>
+        <button class="closeX nameBtn" id="setNameBtn">Set Name</button>
+        <button class="closeX" id="startGameBtn">Start</button>
+        <button class="closeX" id="closeGameBtn">×</button>
+      </div>
+    </div>
+    <div class="gameBar">
+      <div>Score: <span id="score">0</span></div>
+      <div>Time: <span id="time">30</span>s</div>
+      <div>Best: <span id="best">0</span></div>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+    <div class="gameHint">Move with ←/→ or mouse. On phone: drag left/right.</div>
+  </div>
 </div>
 
 <!-- ========= 1) Firebase + GLOBAL LEADERBOARD (MODULE) ========= -->
 <script type="module">
-// Firebase SDK (v12.2.1)
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-analytics.js";
-import {
- getFirestore, collection, addDoc, serverTimestamp,
- query, orderBy, limit, getDocs
-} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+  // Firebase SDK (v12.2.1)
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-analytics.js";
+  import {
+    getFirestore, collection, addDoc, serverTimestamp,
+    query, orderBy, limit, getDocs
+  } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-// Your config (from your message)
-const firebaseConfig = {
- apiKey: "AIzaSyDAyKfDDVeZpidguVlhSzjXzXD0Ixv5DTo",
- authDomain: "countdown-87ab5.firebaseapp.com",
- projectId: "countdown-87ab5",
- storageBucket: "countdown-87ab5.firebasestorage.app",
- messagingSenderId: "587988485298",
- appId: "1:587988485298:web:3bda8da4969387afbab5ab",
- measurementId: "G-KGZ1E5LY52"
-};
+  // Your config
+  const firebaseConfig = {
+    apiKey: "AIzaSyDAyKfDDVeZpidguVlhSzjXzXD0Ixv5DTo",
+    authDomain: "countdown-87ab5.firebaseapp.com",
+    projectId: "countdown-87ab5",
+    storageBucket: "countdown-87ab5.firebasestorage.app",
+    messagingSenderId: "587988485298",
+    appId: "1:587988485298:web:3bda8da4969387afbab5ab",
+    measurementId: "G-KGZ1E5LY52"
+  };
 
-const app = initializeApp(firebaseConfig);
-getAnalytics(app); // optional
-const db  = getFirestore(app);
-const scoresCol = collection(db, "scores");
+  const app = initializeApp(firebaseConfig);
+  getAnalytics(app); // optional
+  const db  = getFirestore(app);
+  const scoresCol = collection(db, "scores");
 
-// Name helpers (local so you don't retype each time)
-const NAME_KEY = "emojiCatchPlayerName";
-function getName(){ return localStorage.getItem(NAME_KEY) || ""; }
-function setName(n){ localStorage.setItem(NAME_KEY, n); }
+  // Name helpers (local only)
+  const NAME_KEY = "emojiCatchPlayerName";
+  function getName(){ return localStorage.getItem(NAME_KEY) || ""; }
+  function setName(n){ localStorage.setItem(NAME_KEY, n); }
 
-// Render Top 10 from Firestore
-async function renderLB(){
- const list = document.getElementById("lbList");
- const meta = document.getElementById("lbMeta");
- if(!list) return;
+  // Will store the most recent submitted score so it always shows
+  window._lastScore = null;
 
- list.innerHTML = "<li>Loading…</li>";
- try{
-   // BEFORE
-// const qTop = query(scoresCol, orderBy("score","desc"), orderBy("createdAt","asc"), limit(10));
+  // Render Top 10 (Option A: no composite index)
+  async function renderLB(){
+    const list = document.getElementById("lbList");
+    const meta = document.getElementById("lbMeta");
+    if(!list) return;
 
-// AFTER (no composite index required)
-const qTop = query(scoresCol, orderBy("score","desc"), limit(10));
-const snap = await getDocs(qTop);
+    list.innerHTML = "<li>Loading…</li>";
+    try{
+      const qTop = query(scoresCol, orderBy("score","desc"), limit(10));
+      const snap = await getDocs(qTop);
 
-// Optional tie-break in JS (so equal scores are oldest-first)
-const rows = [];
-snap.forEach(doc => {
-  const d = doc.data();
-  rows.push({
-    name: d.name || "Anonymous",
-    score: d.score || 0,
-    createdAt: d.createdAt?.toDate ? d.createdAt.toDate() : new Date()
-  });
-});
-// client-side tie-breaker
-rows.sort((a,b) => b.score - a.score || a.createdAt - b.createdAt);
-   } else {
-     list.innerHTML = "";
-     rows.forEach((row, i)=>{
-       const li = document.createElement("li");
-       const ts = `${row.createdAt.toLocaleDateString()} ${row.createdAt.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
-       li.innerHTML = `<strong>${i+1}.</strong> ${escapeHTML(row.name)} — <strong>${row.score}</strong> <span class="lb-meta">(${ts})</span>`;
-       list.appendChild(li);
-     });
-   }
-   meta.textContent = "Global scores — powered by Firebase Firestore.";
- }catch(err){
-   list.innerHTML = "<li>Could not load leaderboard. 😿</li>";
-   meta.textContent = String(err);
-   console.error(err);
- }
-}
+      const rows = [];
+      snap.forEach(doc => {
+        const d = doc.data();
+        rows.push({
+          name: d.name || "Anonymous",
+          score: d.score || 0,
+          createdAt: d.createdAt?.toDate ? d.createdAt.toDate() : new Date()
+        });
+      });
 
-// Add a score to Firestore
-async function addScore(name, score){
- try{
-   const cleanName = (name || "Anonymous").toString().trim().slice(0,20);
-   const safeScore = Math.max(0, Math.min(500, Number(score) || 0));
-   await addDoc(scoresCol, {
-     name: cleanName,
-     score: safeScore,
-     createdAt: serverTimestamp()
-   });
-   await renderLB();
- }catch(err){
-   console.error("Failed to submit score:", err);
-   alert("Could not submit score right now. Try again later.");
- }
-}
+      // tie-break oldest-first on client
+      rows.sort((a,b) => b.score - a.score || a.createdAt - b.createdAt);
 
-// expose for the non-module script
-window.renderLB = renderLB;
-window.addScore = addScore;
-window.getName = getName;
-window.setName = setName;
-window.escapeHTML = (s)=> (s||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
+      list.innerHTML = "";
+      if(rows.length === 0){
+        list.innerHTML = "<li>No scores yet. Be the first! 🎯</li>";
+      } else {
+        rows.forEach((row, i)=>{
+          const li = document.createElement("li");
+          const ts = `${row.createdAt.toLocaleDateString()} ${row.createdAt.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
+          li.innerHTML = `<strong>${i+1}.</strong> ${escapeHTML(row.name)} — <strong>${row.score}</strong> <span class="lb-meta">(${ts})</span>`;
+          list.appendChild(li);
+        });
+      }
 
-renderLB();
+      // Always show your latest score even if not in Top 10
+      if (window._lastScore) {
+        const inTop = rows.some(r =>
+          r.score === window._lastScore.score &&
+          r.name === window._lastScore.name &&
+          Math.abs(r.createdAt - window._lastScore.createdAt) < 2000
+        );
+        if (!inTop) {
+          const li = document.createElement("li");
+          const ts = `${window._lastScore.createdAt.toLocaleDateString()} ${window._lastScore.createdAt.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
+          li.innerHTML = `<em>• Your latest:</em> <strong>${escapeHTML(window._lastScore.name)}</strong> — <strong>${window._lastScore.score}</strong> <span class="lb-meta">(${ts}, not in Top 10)</span>`;
+          li.style.marginTop = "10px";
+          li.style.opacity = "0.9";
+          list.appendChild(li);
+        }
+      }
+
+      meta.textContent = "Global scores — powered by Firebase Firestore.";
+    }catch(err){
+      list.innerHTML = "<li>Could not load leaderboard. 😿</li>";
+      meta.textContent = String(err);
+      console.error(err);
+    }
+  }
+
+  // Add a score to Firestore (called every round, NOT just best)
+  async function addScore(name, score){
+    try{
+      const cleanName = (name || "Anonymous").toString().trim().slice(0,20);
+      const safeScore = Math.max(0, Math.min(500, Number(score) || 0));
+
+      // Remember locally so we can show it even if not in Top 10
+      window._lastScore = { name: cleanName, score: safeScore, createdAt: new Date() };
+
+      await addDoc(scoresCol, {
+        name: cleanName,
+        score: safeScore,
+        createdAt: serverTimestamp()
+      });
+
+      await renderLB();
+    }catch(err){
+      console.error("Failed to submit score:", err);
+      alert("Could not submit score right now. Try again later.");
+    }
+  }
+
+  // expose for non-module script
+  window.renderLB = renderLB;
+  window.addScore = addScore;
+  window.getName = getName;
+  window.setName = setName;
+  window.escapeHTML = (s)=> (s||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
+
+  renderLB();
 </script>
 
 <!-- ========= 2) APP LOGIC (NON-MODULE) ========= -->
@@ -269,46 +293,46 @@ const elProgText = document.getElementById("progressText");
 const elMsg  = document.getElementById("msg");
 
 function fmt(distance){
- const d = Math.floor(distance / (1000*60*60*24));
- const h = Math.floor((distance % (1000*60*60*24)) / (1000*60*60));
- const m = Math.floor((distance % (1000*60*60)) / (1000*60));
- const s = Math.floor((distance % (1000*60)) / 1000);
- return compactFormat ? `${d} days • ${h}h` : `${d}d ${h}h ${m}m ${s}s`;
+  const d = Math.floor(distance / (1000*60*60*24));
+  const h = Math.floor((distance % (1000*60*60*24)) / (1000*60*60));
+  const m = Math.floor((distance % (1000*60*60)) / (1000*60));
+  const s = Math.floor((distance % (1000*60)) / 1000);
+  return compactFormat ? `${d} days • ${h}h` : `${d}d ${h}h ${m}m ${s}s`;
 }
 function updateMessage(dist){
- const twoWeeks = 14 * 24 * 60 * 60 * 1000;
- if (dist > twoWeeks) elMsg.textContent = "Just a few weeks left";
- else if (dist > 0) {
-   const days = Math.floor(dist / (1000*60*60*24));
-   const weeks = Math.floor(days / 7);
-   const remDays = days % 7;
-   let msg = "Just ";
-   if (weeks > 0) {
-     msg += weeks + (weeks === 1 ? " week" : " weeks");
-     if (remDays > 0) msg += " and " + remDays + (remDays === 1 ? " day" : " days");
-   } else { msg += days + (days === 1 ? " day" : " days"); }
-   elMsg.textContent = msg + " left";
- } else elMsg.textContent = "I am back! 🎉";
+  const twoWeeks = 14 * 24 * 60 * 60 * 1000;
+  if (dist > twoWeeks) elMsg.textContent = "Just a few weeks left";
+  else if (dist > 0) {
+    const days = Math.floor(dist / (1000*60*60*24));
+    const weeks = Math.floor(days / 7);
+    const remDays = days % 7;
+    let msg = "Just ";
+    if (weeks > 0) {
+      msg += weeks + (weeks === 1 ? " week" : " weeks");
+      if (remDays > 0) msg += " and " + remDays + (remDays === 1 ? " day" : " days");
+    } else { msg += days + (days === 1 ? " day" : " days"); }
+    elMsg.textContent = msg + " left";
+  } else elMsg.textContent = "I am back! 🎉";
 }
 function tick(){
- const now = Date.now();
- const dist = TARGET_DATE - now;
- if(dist <= 0 && !finished){
-   finished = true;
-   elTime.textContent = "🎉 It's time!";
-   celebrate();
- }
- if(dist > 0){
-   elTime.textContent = fmt(dist);
-   elTime.classList.add("updated");
-   setTimeout(()=>elTime.classList.remove("updated"), 180);
- }
- updateMessage(dist);
- const total = TARGET_DATE - START_DATE;
- const done  = Math.max(0, Math.min(total, now - START_DATE));
- const pct   = Math.max(0, Math.min(100, (done/total)*100));
- elBar.style.width = pct.toFixed(1) + "%";
- elProgText.textContent = `Progress: ${pct.toFixed(1)}%`;
+  const now = Date.now();
+  const dist = TARGET_DATE - now;
+  if(dist <= 0 && !finished){
+    finished = true;
+    elTime.textContent = "🎉 It's time!";
+    celebrate();
+  }
+  if(dist > 0){
+    elTime.textContent = fmt(dist);
+    elTime.classList.add("updated");
+    setTimeout(()=>elTime.classList.remove("updated"), 180);
+  }
+  updateMessage(dist);
+  const total = TARGET_DATE - START_DATE;
+  const done  = Math.max(0, Math.min(total, now - START_DATE));
+  const pct   = Math.max(0, Math.min(100, (done/total)*100));
+  elBar.style.width = pct.toFixed(1) + "%";
+  elProgText.textContent = `Progress: ${pct.toFixed(1)}%`;
 }
 setInterval(tick, 1000); tick();
 document.getElementById("toggleFormatBtn").onclick = ()=>{ compactFormat = !compactFormat; tick(); };
@@ -320,80 +344,77 @@ const scratchWrap = document.getElementById("scratchWrap");
 const scratchCanvas = document.getElementById("scratchCanvas");
 document.getElementById("revealBtn").onclick = ()=>{ mask.style.display="none"; scratchWrap.style.display="none"; };
 document.getElementById("scratchBtn").onclick = ()=>{
- mask.style.display="none"; scratchWrap.style.display="block"; initScratch();
+  mask.style.display="none"; scratchWrap.style.display="block"; initScratch();
 };
 function initScratch(){
- const c = scratchCanvas, ctx = c.getContext("2d");
- const wrapRect = scratchWrap.getBoundingClientRect();
- const DPR = window.devicePixelRatio || 1;
- c.width = Math.max(1, Math.floor(wrapRect.width * DPR));
- c.height = Math.max(1, Math.floor(wrapRect.height * DPR));
- c.style.width = wrapRect.width + "px";
- c.style.height = wrapRect.height + "px";
- ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
- ctx.globalCompositeOperation = "source-over"; ctx.fillStyle = "#000";
- ctx.fillRect(0, 0, wrapRect.width, wrapRect.height);
- ctx.globalCompositeOperation = "destination-out";
- let scratching = false; const brush = 28;
- function pos(e){ const t = e.touches ? e.touches[0] : e; return { x: t.clientX - wrapRect.left, y: t.clientY - wrapRect.top }; }
- function draw(e){ if(!scratching) return; e.preventDefault(); const p = pos(e); ctx.beginPath(); ctx.arc(p.x,p.y,brush,0,Math.PI*2); ctx.fill(); }
- function start(e){ scratching = true; draw(e); } function end(){ scratching = false; }
- scratchWrap.addEventListener("mousedown", start);
- scratchWrap.addEventListener("mousemove", draw);
- window.addEventListener("mouseup", end);
- scratchWrap.addEventListener("touchstart", start, { passive:false });
- scratchWrap.addEventListener("touchmove",  draw,  { passive:false });
- scratchWrap.addEventListener("touchend",   end,   { passive:false });
- scratchWrap.addEventListener("touchcancel",end,   { passive:false });
- function clearedFraction(){
-   const w=c.width,h=c.height,step=Math.max(4,Math.floor(Math.min(w,h)/180));
-   let clear=0,total=0; const data=ctx.getImageData(0,0,w,h).data;
-   for(let y=0;y<h;y+=step){ let row=(y*w)*4; for(let x=0;x<w;x+=step){ if(data[row+x*4+3]===0) clear++; total++; } }
-   return total ? clear/total : 0;
- }
- const timer = setInterval(()=>{ if(clearedFraction()>REVEAL_THRESHOLD) scratchWrap.style.display="none"; },700);
- const obs=new MutationObserver(()=>{ if(scratchWrap.style.display==="none"){clearInterval(timer); obs.disconnect();} });
- obs.observe(scratchWrap,{attributes:true,attributeFilter:["style"]});
+  const c = scratchCanvas, ctx = c.getContext("2d");
+  const wrapRect = scratchWrap.getBoundingClientRect();
+  const DPR = window.devicePixelRatio || 1;
+  c.width = Math.max(1, Math.floor(wrapRect.width * DPR));
+  c.height = Math.max(1, Math.floor(wrapRect.height * DPR));
+  c.style.width = wrapRect.width + "px";
+  c.style.height = wrapRect.height + "px";
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  ctx.globalCompositeOperation = "source-over"; ctx.fillStyle = "#000";
+  ctx.fillRect(0, 0, wrapRect.width, wrapRect.height);
+  ctx.globalCompositeOperation = "destination-out";
+  let scratching = false; const brush = 28;
+  function pos(e){ const t = e.touches ? e.touches[0] : e; return { x: t.clientX - wrapRect.left, y: t.clientY - wrapRect.top }; }
+  function draw(e){ if(!scratching) return; e.preventDefault(); const p = pos(e); ctx.beginPath(); ctx.arc(p.x,p.y,brush,0,Math.PI*2); ctx.fill(); }
+  function start(e){ scratching = true; draw(e); } function end(){ scratching = false; }
+  scratchWrap.addEventListener("mousedown", start);
+  scratchWrap.addEventListener("mousemove", draw);
+  window.addEventListener("mouseup", end);
+  scratchWrap.addEventListener("touchstart", start, { passive:false });
+  scratchWrap.addEventListener("touchmove",  draw,  { passive:false });
+  scratchWrap.addEventListener("touchend",   end,   { passive:false });
+  scratchWrap.addEventListener("touchcancel",end,   { passive:false });
+  function clearedFraction(){
+    const w=c.width,h=c.height,step=Math.max(4,Math.floor(Math.min(w,h)/180));
+    let clear=0,total=0; const data=ctx.getImageData(0,0,w,h).data;
+    for(let y=0;y<h;y+=step){ let row=(y*w)*4; for(let x=0;x<w;x+=step){ if(data[row+x*4+3]===0) clear++; total++; } }
+    return total ? clear/total : 0;
+  }
+  const timer = setInterval(()=>{ if(clearedFraction()>REVEAL_THRESHOLD) scratchWrap.style.display="none"; },700);
+  const obs=new MutationObserver(()=>{ if(scratchWrap.style.display==="none"){clearInterval(timer); obs.disconnect();} });
+  obs.observe(scratchWrap,{attributes:true,attributeFilter:["style"]});
 }
 
 /* === Background particles === */
 (function particles(){
- const canvas=document.getElementById("particles"),ctx=canvas.getContext("2d");
- let w,h; function resize(){ w=canvas.width=innerWidth; h=canvas.height=innerHeight; }
- resize(); addEventListener("resize", resize);
- const N=60,p=[]; for(let i=0;i<N;i++) p.push({x:Math.random()*w,y:Math.random()*h,r:1+Math.random()*3,vx:(Math.random()-0.5)*0.4,vy:(Math.random()-0.5)*0.4,a:0.18+Math.random()*0.25});
- (function step(){ ctx.clearRect(0,0,w,h); for(const s of p){ s.x+=s.vx; s.y+=s.vy; if(s.x<-10)s.x=w+10; if(s.x>w+10)s.x=-10; if(s.y<-10)s.y=h+10; if(s.y>h+10)s.y=-10; ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fillStyle=`rgba(255,255,255,${s.a})`; ctx.fill(); } requestAnimationFrame(step); })();
+  const canvas=document.getElementById("particles"),ctx=canvas.getContext("2d");
+  let w,h; function resize(){ w=canvas.width=innerWidth; h=canvas.height=innerHeight; }
+  resize(); addEventListener("resize", resize);
+  const N=60,p=[]; for(let i=0;i<N;i++) p.push({x:Math.random()*w,y:Math.random()*h,r:1+Math.random()*3,vx:(Math.random()-0.5)*0.4,vy:(Math.random()-0.5)*0.4,a:0.18+Math.random()*0.25});
+  (function step(){ ctx.clearRect(0,0,w,h); for(const s of p){ s.x+=s.vx; s.y+=s.vy; if(s.x<-10)s.x=w+10; if(s.x>w+10)s.x=-10; if(s.y<-10)s.y=h+10; if(s.y>h+10)s.y=-10; ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fillStyle=`rgba(255,255,255,${s.a})`; ctx.fill(); } requestAnimationFrame(step); })();
 })();
 
 /* === Celebration === */
 function celebrate(){ confettiBurst(1000,160); emojiRain("🎉✨🎊❤️🚗✈️",2200); playDing(); }
 function confettiBurst(duration=1200,count=120){
- const c=document.getElementById("confetti"),ctx=c.getContext("2d"); let w,h; function resize(){ w=c.width=innerWidth; h=c.height=innerHeight; } resize();
- const flakes=[]; for(let i=0;i<count;i++) flakes.push({x:Math.random()*w,y:-Math.random()*h*0.3,r:4+Math.random()*4,vx:(Math.random()-0.5)*3,vy:2+Math.random()*3,rot:Math.random()*Math.PI,vr:(Math.random()-0.5)*0.2});
- const start=performance.now(); (function frame(now){ const t=now-start; ctx.clearRect(0,0,w,h); flakes.forEach(f=>{ f.x+=f.vx; f.y+=f.vy; f.rot+=f.vr; ctx.save(); ctx.translate(f.x,f.y); ctx.rotate(f.rot); ctx.fillStyle=`hsl(${(f.x/w)*360},90%,55%)`; ctx.fillRect(-f.r,-f.r,f.r*2,f.r*2); ctx.restore(); }); if(t<duration) requestAnimationFrame(frame); else ctx.clearRect(0,0,w,h); })(performance.now());
+  const c=document.getElementById("confetti"),ctx=c.getContext("2d"); let w,h; function resize(){ w=c.width=innerWidth; h=c.height=innerHeight; } resize();
+  const flakes=[]; for(let i=0;i<count;i++) flakes.push({x:Math.random()*w,y:-Math.random()*h*0.3,r:4+Math.random()*4,vx:(Math.random()-0.5)*3,vy:2+Math.random()*3,rot:Math.random()*Math.PI,vr:(Math.random()-0.5)*0.2});
+  const start=performance.now(); (function frame(now){ const t=now-start; ctx.clearRect(0,0,w,h); flakes.forEach(f=>{ f.x+=f.vx; f.y+=f.vy; f.rot+=f.vr; ctx.save(); ctx.translate(f.x,f.y); ctx.rotate(f.rot); ctx.fillStyle=`hsl(${(f.x/w)*360},90%,55%)`; ctx.fillRect(-f.r,-f.r,f.r*2,f.r*2); ctx.restore(); }); if(t<duration) requestAnimationFrame(frame); else ctx.clearRect(0,0,w,h); })(performance.now());
 }
 function emojiRain(chars="🎉✨",duration=2000){
- const c=document.getElementById("emojiRain"),ctx=c.getContext("2d"); let w,h; function resize(){ w=c.width=innerWidth; h=c.height=innerHeight; } resize();
- const arr=chars.split(""),drops=Array.from({length:40},()=>({x:Math.random()*w,y:-Math.random()*h*0.2,vy:2+Math.random()*3,emoji:arr[Math.floor(Math.random()*arr.length)],size:24+Math.random()*22}));
- const start=performance.now(); (function frame(now){ const t=now-start; ctx.clearRect(0,0,w,h); drops.forEach(d=>{ d.y+=d.vy; ctx.font=`${d.size}px system-ui`; ctx.fillText(d.emoji,d.x,d.y); }); if(t<duration) requestAnimationFrame(frame); else ctx.clearRect(0,0,w,h); })(performance.now());
+  const c=document.getElementById("emojiRain"),ctx=c.getContext("2d"); let w,h; function resize(){ w=c.width=innerWidth; h=c.height=innerHeight; } resize();
+  const arr=chars.split(""),drops=Array.from({length:40},()=>({x:Math.random()*w,y:-Math.random()*h*0.2,vy:2+Math.random()*3,emoji:arr[Math.floor(Math.random()*arr.length)],size:24+Math.random()*22}));
+  const start=performance.now(); (function frame(now){ const t=now-start; ctx.clearRect(0,0,w,h); drops.forEach(d=>{ d.y+=d.vy; ctx.font=`${d.size}px system-ui`; ctx.fillText(d.emoji,d.x,d.y); }); if(t<duration) requestAnimationFrame(frame); else ctx.clearRect(0,0,w,h); })(performance.now());
 }
 function playDing(){ try{ const a=new (window.AudioContext||window.webkitAudioContext)(); const o=a.createOscillator(),g=a.createGain(); o.type="sine"; o.frequency.setValueAtTime(880,a.currentTime); g.gain.setValueAtTime(0.001,a.currentTime); g.gain.exponentialRampToValueAtTime(0.3,a.currentTime+0.02); g.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+0.8); o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime+0.8);}catch(e){} }
 
 /* === Daily Quote === */
 const quotesList = [
- "Stay strong — every day is progress. 💪",
- "Patience is the companion of wisdom. ⏳",
- "One step closer to home. 🏠",
- "Good things are coming. ✨",
- "The wait makes the return sweeter. ❤️",
- "Keep going — you're doing amazing. 🚀",
- "Almost there! 🙌"
+  "Stay strong — every day is progress. 💪",
+  "Patience is the companion of wisdom. ⏳",
+  "One step closer to home. 🏠",
+  "Good things are coming. ✨",
+  "The wait makes the return sweeter. ❤️",
+  "Keep going — you're doing amazing. 🚀",
+  "Almost there! 🙌"
 ];
 function showDailyQuote(){ const today=new Date().getDate(); const idx=today%quotesList.length; const el=document.getElementById("dailyQuote"); if(el) el.textContent=quotesList[idx]; }
 if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded", showDailyQuote); } else { showDailyQuote(); }
-
-/* === Leaderboard helper (calls are provided by the module script) === */
-function escapeHTML(s){ return window.escapeHTML ? window.escapeHTML(s) : s; }
 
 /* === Mini Game: Emoji Catch === */
 const gameBtn=document.getElementById("gameBtn");
@@ -409,26 +430,26 @@ let gCtx,gw,gh,rafId,running=false,tLeft=30,score=0,best=0,lastSpawn=0;
 const EMOJIS="❤️✨🎉💙💛💚💜⭐️🥳"; let catcher,drops=[];
 best=+localStorage.getItem("emojiCatchBest")||0; bestEl.textContent=best;
 
-function openGame(){ gameModal.style.display="flex"; resizeGame(); if(!window.getName() || window.getName().trim()===""){ askForName(); } }
+function openGame(){ gameModal.style.display="flex"; resizeGame(); if(!window.getName || !window.getName() || window.getName().trim()===""){ askForName(); } }
 function closeGame(){ gameModal.style.display="none"; stopGame(); }
 gameBtn.onclick=openGame; closeGameBtn.onclick=closeGame; setNameBtn.onclick=askForName;
 
 function askForName(){
- const current = window.getName ? window.getName() : "";
- const n = prompt("Enter your name for the leaderboard:", current || "");
- if(n !== null){
-   const trimmed = (n || "").trim().slice(0,20);
-   if(window.setName) window.setName(trimmed || "Anonymous");
-   alert(`Name set to: ${window.getName()}`);
- }
+  const current = window.getName ? window.getName() : "";
+  const n = prompt("Enter your name for the leaderboard:", current || "");
+  if(n !== null){
+    const trimmed = (n || "").trim().slice(0,20);
+    if(window.setName) window.setName(trimmed || "Anonymous");
+    alert(`Name set to: ${window.getName()}`);
+  }
 }
 
 function resizeGame(){
- const DPR=window.devicePixelRatio||1;
- gw=gameCanvas.clientWidth; gh=gameCanvas.clientHeight;
- gameCanvas.width=Math.floor(gw*DPR); gameCanvas.height=Math.floor(gh*DPR);
- gCtx=gameCanvas.getContext("2d"); gCtx.setTransform(DPR,0,0,DPR,0,0);
- const w=Math.max(80,gw*0.18); catcher=catcher||{x:gw/2,y:gh-24,w,h:14,vx:0};
+  const DPR=window.devicePixelRatio||1;
+  gw=gameCanvas.clientWidth; gh=gameCanvas.clientHeight;
+  gameCanvas.width=Math.floor(gw*DPR); gameCanvas.height=Math.floor(gh*DPR);
+  gCtx=gameCanvas.getContext("2d"); gCtx.setTransform(DPR,0,0,DPR,0,0);
+  const w=Math.max(80,gw*0.18); catcher=catcher||{x:gw/2,y:gh-24,w,h:14,vx:0};
 }
 window.addEventListener("resize", ()=>{ if(gameModal.style.display==="flex") resizeGame(); });
 
@@ -446,37 +467,38 @@ startGameBtn.onclick=startGame;
 
 function spawnDrop(){ const size=20+Math.random()*18; drops.push({x:Math.random()*gw,y:-30,vy:2.2+Math.random()*2.3,size,emoji:EMOJIS[Math.floor(Math.random()*EMOJIS.length)]}); }
 function loop(now){
- if(!running) return;
- rafId=requestAnimationFrame(loop);
- if(now-lastSpawn>260+Math.random()*240){ spawnDrop(); lastSpawn=now; }
- const speed=6; if(keys["ArrowLeft"]) catcher.x-=speed; if(keys["ArrowRight"]) catcher.x+=speed;
- catcher.x=Math.max(catcher.w/2,Math.min(gw-catcher.w/2,catcher.x));
- gCtx.clearRect(0,0,gw,gh);
- gCtx.fillStyle="rgba(0,0,0,0.35)"; gCtx.fillRect(catcher.x-catcher.w/2,catcher.y-catcher.h/2,catcher.w,catcher.h);
- for(let i=drops.length-1;i>=0;i--){ const d=drops[i]; d.y+=d.vy; gCtx.font=`${d.size}px system-ui`; gCtx.fillText(d.emoji,d.x,d.y);
-   const withinX=Math.abs(d.x-catcher.x)<(catcher.w/2); const withinY=Math.abs(d.y-catcher.y)<(catcher.h+d.size*0.6);
-   if(withinX&&withinY){ drops.splice(i,1); score+=1; scoreEl.textContent=score; continue; }
-   if(d.y>gh+40){ drops.splice(i,1); }
- }
+  if(!running) return;
+  rafId=requestAnimationFrame(loop);
+  if(now-lastSpawn>260+Math.random()*240){ spawnDrop(); lastSpawn=now; }
+  const speed=6; if(keys["ArrowLeft"]) catcher.x-=speed; if(keys["ArrowRight"]) catcher.x+=speed;
+  catcher.x=Math.max(catcher.w/2,Math.min(gw-catcher.w/2,catcher.x));
+  gCtx.clearRect(0,0,gw,gh);
+  gCtx.fillStyle="rgba(0,0,0,0.35)"; gCtx.fillRect(catcher.x-catcher.w/2,catcher.y-catcher.h/2,catcher.w,catcher.h);
+  for(let i=drops.length-1;i>=0;i--){ const d=drops[i]; d.y+=d.vy; gCtx.font=`${d.size}px system-ui`; gCtx.fillText(d.emoji,d.x,d.y);
+    const withinX=Math.abs(d.x-catcher.x)<(catcher.w/2); const withinY=Math.abs(d.y-catcher.y)<(catcher.h+d.size*0.6);
+    if(withinX&&withinY){ drops.splice(i,1); score+=1; scoreEl.textContent=score; continue; }
+    if(d.y>gh+40){ drops.splice(i,1); }
+  }
 }
 function countdownTick(){
- if(!running) return;
- setTimeout(()=>{
-   tLeft-=1; timeEl.textContent=tLeft;
-   if(tLeft<=0){
-     running=false;
-     if(score>best){ best=score; localStorage.setItem("emojiCatchBest",best); }
-     bestEl.textContent=best;
-     if(score>0 && window.addScore){
-       const current = window.getName ? window.getName() : "";
-       let name = current || prompt("Great round! Enter your name for the leaderboard:", "") || "";
-       name=(name.trim()||"Anonymous").slice(0,20);
-       if(window.setName) window.setName(name);
-       window.addScore(name, score);
-       confettiBurst(800, 120);
-     }
-   }else{ countdownTick(); }
- },1000);
+  if(!running) return;
+  setTimeout(()=>{
+    tLeft-=1; timeEl.textContent=tLeft;
+    if(tLeft<=0){
+      running=false;
+      if(score>best){ best=score; localStorage.setItem("emojiCatchBest",best); }
+      bestEl.textContent=best;
+      // ALWAYS submit the round’s score
+      if(score>0 && window.addScore){
+        const current = window.getName ? window.getName() : "";
+        let name = current || prompt("Great round! Enter your name for the leaderboard:", "") || "";
+        name=(name.trim()||"Anonymous").slice(0,20);
+        if(window.setName) window.setName(name);
+        window.addScore(name, score);
+        confettiBurst(800, 120);
+      }
+    }else{ countdownTick(); }
+  },1000);
 }
 
 /* Initial leaderboard render in case module loaded first */
