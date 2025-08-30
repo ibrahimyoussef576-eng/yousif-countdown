@@ -80,6 +80,32 @@
   #dailyQuote{ text-align:center; margin:0 12px 28px; font-style:italic; opacity:0.9; }
 
   #confetti, #emojiRain{ position:fixed; inset:0; pointer-events:none; z-index:10; }
+
+  /* ===== Mini Game Modal ===== */
+  .modal{
+    position:fixed; inset:0; display:none; align-items:center; justify-content:center;
+    background: rgba(0,0,0,0.7); z-index:20;
+  }
+  .modalContent{
+    width:min(620px, 94vw); background: var(--card); color:var(--cardText);
+    border-radius:18px; box-shadow: var(--shadow); padding:16px 16px 22px; position:relative;
+    backdrop-filter:saturate(160%) blur(8px);
+  }
+  .modalHeader{
+    display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px;
+  }
+  .closeX{
+    background: rgba(255,255,255,0.22); border:none; border-radius:10px; padding:6px 10px; cursor:pointer;
+    font-weight:800;
+  }
+  #gameCanvas{
+    width:100%; height:420px; background: rgba(0,0,0,0.1); border-radius:14px; display:block;
+    touch-action: none;
+  }
+  .gameBar{
+    display:flex; justify-content:space-between; align-items:center; margin:10px 4px 4px; font-weight:800;
+  }
+  .gameHint{ opacity:.9; font-size:.95em; margin-top:6px; text-align:center;}
 </style>
 </head>
 <body>
@@ -95,6 +121,7 @@
     <button id="scratchBtn">🪄 Scratch-to-Reveal</button>
     <button id="toggleFormatBtn">🔁 Toggle Format</button>
     <button id="themeBtn">🌓 Theme</button>
+    <button id="gameBtn">🎮 Mini Game</button>
   </div>
 </header>
 
@@ -127,13 +154,31 @@
 <footer>I’ll be back soon! Meow Meow Meow</footer>
 <div id="dailyQuote"></div>
 
+<!-- ======== Mini Game Modal ======== -->
+<div class="modal" id="gameModal" aria-hidden="true">
+  <div class="modalContent">
+    <div class="modalHeader">
+      <strong>🎮 Emoji Catch — 30s</strong>
+      <div>
+        <button class="closeX" id="startGameBtn">Start</button>
+        <button class="closeX" id="closeGameBtn">×</button>
+      </div>
+    </div>
+    <div class="gameBar">
+      <div>Score: <span id="score">0</span></div>
+      <div>Time: <span id="time">30</span>s</div>
+      <div>Best: <span id="best">0</span></div>
+    </div>
+    <canvas id="gameCanvas"></canvas>
+    <div class="gameHint">Move with ←/→ or mouse. On phone: drag left/right.</div>
+  </div>
+</div>
+
 <script>
   /* =================== Config =================== */
   const TARGET_DATE = new Date("Sep 12, 2025 00:00:00").getTime();
   const START_DATE  = new Date("Jun 15, 2025 00:00:00").getTime(); // progress bar start
-
-  // Scratch config
-  const REVEAL_THRESHOLD = 0.90;   // require 90% cleared to auto-hide
+  const REVEAL_THRESHOLD = 0.90;   // scratch: require 90% cleared to auto-hide
 
   /* ========== Countdown / Progress / Messages ========== */
   let compactFormat = false, finished = false;
@@ -155,7 +200,6 @@
     if (dist > twoWeeks) {
       elMsg.textContent = "Just a few weeks left";
     } else if (dist > 0) {
-      // weeks + days
       const days = Math.floor(dist / (1000*60*60*24));
       const weeks = Math.floor(days / 7);
       const remDays = days % 7;
@@ -215,20 +259,18 @@
     const c = scratchCanvas, ctx = c.getContext("2d");
     const wrapRect = scratchWrap.getBoundingClientRect();
 
-    // Size canvas for device pixel ratio
     const DPR = window.devicePixelRatio || 1;
     c.width = Math.max(1, Math.floor(wrapRect.width * DPR));
     c.height = Math.max(1, Math.floor(wrapRect.height * DPR));
     c.style.width = wrapRect.width + "px";
     c.style.height = wrapRect.height + "px";
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0); // ensure proper scaling
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 
-    // Fully opaque cover layer
+    // solid cover
     ctx.globalCompositeOperation = "source-over";
-    ctx.fillStyle = "#000"; // solid black
+    ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, wrapRect.width, wrapRect.height);
 
-    // Erase with brush
     ctx.globalCompositeOperation = "destination-out";
 
     let scratching = false;
@@ -240,36 +282,31 @@
     }
     function draw(e){
       if(!scratching) return;
-      e.preventDefault(); // stop page scroll while scratching
+      e.preventDefault();
       const p = pos(e);
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, brush, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.beginPath(); ctx.arc(p.x, p.y, brush, 0, Math.PI * 2); ctx.fill();
     }
     function start(e){ scratching = true; draw(e); }
     function end(){ scratching = false; }
 
-    // Mouse
     scratchWrap.addEventListener("mousedown", start);
     scratchWrap.addEventListener("mousemove", draw);
     window.addEventListener("mouseup", end);
 
-    // Touch (non-passive so we can preventDefault)
     scratchWrap.addEventListener("touchstart", start, { passive: false });
     scratchWrap.addEventListener("touchmove",  draw,  { passive: false });
     scratchWrap.addEventListener("touchend",   end,   { passive: false });
     scratchWrap.addEventListener("touchcancel",end,   { passive: false });
 
-    // Accurate cleared fraction across FULL canvas (downsampled for speed)
     function clearedFraction(){
       const w = c.width, h = c.height;
-      const step = Math.max(4, Math.floor(Math.min(w, h) / 180)); // adaptive sampling
+      const step = Math.max(4, Math.floor(Math.min(w, h) / 180));
       let clear = 0, total = 0;
       const data = ctx.getImageData(0, 0, w, h).data;
       for(let y = 0; y < h; y += step){
         let rowIndex = (y * w) * 4;
         for(let x = 0; x < w; x += step){
-          if (data[rowIndex + x*4 + 3] === 0) clear++; // alpha channel
+          if (data[rowIndex + x*4 + 3] === 0) clear++;
           total++;
         }
       }
@@ -283,7 +320,6 @@
       }
     }, 700);
 
-    // Clean up when overlay is hidden
     const obs = new MutationObserver(() => {
       if (scratchWrap.style.display === "none") {
         clearInterval(clearCheck);
@@ -372,13 +408,13 @@
 
   /* ========== Daily Motivational Quote ========== */
   const quotes = [
-    "Stay strong, every day is progress.",
-    "Patience is the companion of wisdom.",
-    "One step closer to home.",
-    "Good things are coming.",
-    "The wait makes the return sweeter.",
-    "Keep going — you're doing amazing.",
-    "Almost there!"
+    "Stay strong — every day is progress. 💪",
+    "Patience is the companion of wisdom. ⏳",
+    "One step closer to home. 🏠",
+    "Good things are coming. ✨",
+    "The wait makes the return sweeter. ❤️",
+    "Keep going — you're doing amazing. 🚀",
+    "Almost there! 🙌"
   ];
   function showDailyQuote(){
     const today = new Date().getDate(); // 1–31
@@ -391,6 +427,162 @@
   } else {
     showDailyQuote();
   }
+
+  /* =================== MINI GAME: Emoji Catch =================== */
+  const gameBtn = document.getElementById("gameBtn");
+  const gameModal = document.getElementById("gameModal");
+  const startGameBtn = document.getElementById("startGameBtn");
+  const closeGameBtn = document.getElementById("closeGameBtn");
+  const gameCanvas = document.getElementById("gameCanvas");
+  const scoreEl = document.getElementById("score");
+  const timeEl = document.getElementById("time");
+  const bestEl = document.getElementById("best");
+
+  let gCtx, gw, gh, rafId, running=false, tLeft=30, score=0, best=0, lastSpawn=0;
+  const EMOJIS = "❤️✨🎉💙💛💚💜⭐️🥳";
+  let catcher, drops=[];
+
+  best = +localStorage.getItem("emojiCatchBest") || 0;
+  bestEl.textContent = best;
+
+  function openGame(){
+    gameModal.style.display="flex";
+    resizeGame();
+  }
+  function closeGame(){
+    gameModal.style.display="none";
+    stopGame();
+  }
+  gameBtn.onclick = openGame;
+  closeGameBtn.onclick = closeGame;
+
+  function resizeGame(){
+    const DPR = window.devicePixelRatio || 1;
+    gw = gameCanvas.clientWidth; gh = gameCanvas.clientHeight;
+    gameCanvas.width = Math.floor(gw * DPR);
+    gameCanvas.height= Math.floor(gh * DPR);
+    gCtx = gameCanvas.getContext("2d");
+    gCtx.setTransform(DPR,0,0,DPR,0,0);
+
+    // init catcher
+    const w = Math.max(80, gw*0.18);
+    catcher = catcher || { x: gw/2, y: gh-24, w, h: 14, vx: 0 };
+  }
+  window.addEventListener("resize", ()=>{ if(gameModal.style.display==="flex") resizeGame(); });
+
+  // Controls
+  let keys = {};
+  window.addEventListener("keydown", e=>{ if(gameModal.style.display!=="flex") return;
+    if(e.key==="ArrowLeft"||e.key==="ArrowRight"){ keys[e.key]=true; e.preventDefault(); }
+  });
+  window.addEventListener("keyup", e=>{ if(e.key==="ArrowLeft"||e.key==="ArrowRight"){ keys[e.key]=false; }});
+
+  // Mouse / touch move
+  function moveTo(clientX){
+    const rect = gameCanvas.getBoundingClientRect();
+    const x = Math.max(0, Math.min(gw, clientX - rect.left));
+    catcher.x = x;
+  }
+  gameCanvas.addEventListener("mousemove", e=> moveTo(e.clientX));
+  gameCanvas.addEventListener("touchstart", e=>{ e.preventDefault(); if(e.touches[0]) moveTo(e.touches[0].clientX);},{passive:false});
+  gameCanvas.addEventListener("touchmove",  e=>{ e.preventDefault(); if(e.touches[0]) moveTo(e.touches[0].clientX);},{passive:false});
+
+  function startGame(){
+    drops=[]; score=0; scoreEl.textContent=score; tLeft=30; timeEl.textContent=tLeft;
+    running=true; lastSpawn=performance.now();
+    loop(performance.now());
+    countdownTick();
+  }
+  function stopGame(){ running=false; cancelAnimationFrame(rafId); }
+
+  startGameBtn.onclick = startGame;
+
+  function spawnDrop(){
+    const size = 20 + Math.random()*18;
+    drops.push({
+      x: Math.random()*gw,
+      y: -30,
+      vy: 2.2 + Math.random()*2.3,
+      size,
+      emoji: EMOJIS[Math.floor(Math.random()*EMOJIS.length)]
+    });
+  }
+
+  function loop(now){
+    if(!running) return;
+    rafId = requestAnimationFrame(loop);
+
+    // Spawn every ~300ms (scaled with randomness)
+    if(now - lastSpawn > 260 + Math.random()*240){ spawnDrop(); lastSpawn = now; }
+
+    // move catcher with keys
+    const speed = 6;
+    if(keys["ArrowLeft"]) catcher.x -= speed;
+    if(keys["ArrowRight"]) catcher.x += speed;
+    catcher.x = Math.max(catcher.w/2, Math.min(gw - catcher.w/2, catcher.x));
+
+    // update drops
+    gCtx.clearRect(0,0,gw,gh);
+    // draw catcher
+    gCtx.fillStyle = "rgba(0,0,0,0.35)";
+    gCtx.fillRect(catcher.x - catcher.w/2, catcher.y - catcher.h/2, catcher.w, catcher.h);
+
+    for(let i=drops.length-1;i>=0;i--){
+      const d = drops[i];
+      d.y += d.vy;
+      gCtx.font = `${d.size}px system-ui`;
+      gCtx.fillText(d.emoji, d.x, d.y);
+
+      // caught?
+      const withinX = Math.abs(d.x - catcher.x) < (catcher.w/2);
+      const withinY = Math.abs(d.y - catcher.y) < (catcher.h + d.size*0.6);
+      if(withinX && withinY){
+        drops.splice(i,1);
+        score += 1;
+        scoreEl.textContent = score;
+        continue;
+      }
+      // off screen
+      if(d.y > gh + 40){ drops.splice(i,1); }
+    }
+  }
+
+  function countdownTick(){
+    if(!running) return;
+    setTimeout(()=>{
+      tLeft -= 1;
+      timeEl.textContent = tLeft;
+      if(tLeft <= 0){
+        running = false;
+        if(score > best){ best = score; localStorage.setItem("emojiCatchBest", best); }
+        bestEl.textContent = best;
+        // Small celebration for beating best
+        if(score >= best){ confettiBurst(800, 120); }
+      }else{
+        countdownTick();
+      }
+    }, 1000);
+  }
+
+  /* ======== Daily Quote ======== */
+  const quotes = [
+    "Stay strong — every day is progress. 💪",
+    "Patience is the companion of wisdom. ⏳",
+    "One step closer to home. 🏠",
+    "Good things are coming. ✨",
+    "The wait makes the return sweeter. ❤️",
+    "Keep going — you're doing amazing. 🚀",
+    "Almost there! 🙌"
+  ];
+  function showDailyQuote(){
+    const today = new Date().getDate();
+    const idx = today % quotes.length;
+    const el = document.getElementById("dailyQuote");
+    if (el) el.textContent = quotes[idx];
+  }
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", showDailyQuote);
+  } else { showDailyQuote(); }
 </script>
 </body>
 </html>
