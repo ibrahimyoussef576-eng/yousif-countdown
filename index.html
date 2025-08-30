@@ -149,15 +149,27 @@
   }
 
   function updateMessage(dist){
-    const twoWeeks = 14 * 24 * 60 * 60 * 1000;
-    if (dist > twoWeeks) {
-      elMsg.textContent = "Just a few weeks left";
-    } else if (dist > 0) {
-      elMsg.textContent = `Just ${fmt(dist)} left`;
+  const twoWeeks = 14 * 24 * 60 * 60 * 1000;
+  if (dist > twoWeeks) {
+    elMsg.textContent = "Just a few weeks left";
+  } else if (dist > 0) {
+    // calculate in weeks + days
+    const days = Math.floor(dist / (1000*60*60*24));
+    const weeks = Math.floor(days / 7);
+    const remDays = days % 7;
+
+    let msg = "Just ";
+    if (weeks > 0) {
+      msg += weeks + (weeks === 1 ? " week" : " weeks");
+      if (remDays > 0) msg += " and " + remDays + (remDays === 1 ? " day" : " days");
     } else {
-      elMsg.textContent = "I am back! 🎉";
+      msg += days + (days === 1 ? " day" : " days");
     }
+    elMsg.textContent = msg + " left";
+  } else {
+    elMsg.textContent = "I am back! 🎉";
   }
+}
 
   function tick(){
     const now = Date.now();
