@@ -123,6 +123,7 @@
 </section>
 
 <footer>I’ll be back soon! Meow Meow Meow</footer>
+  <div id="dailyQuote" style="text-align:center; margin-bottom:30px; font-style:italic; opacity:0.9;"></div>
 
 <script>
   /* =================== Config =================== */
@@ -367,7 +368,25 @@
       g.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+0.8);
       o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime+0.8);
     }catch(e){}
+    // ========== Daily Motivational Quote ==========
+const quotes = [
+  "Stay strong — every day is progress. 💪",
+  "Patience is the companion of wisdom. ⏳",
+  "One step closer to home. 🏠",
+  "Good things are coming. ✨",
+  "The wait makes the return sweeter. ❤️",
+  "Keep going — you're doing amazing. 🚀",
+  "Almost there! 🙌"
+];
+
+function showDailyQuote(){
+  const today = new Date().getDate(); // 1–31
+  const idx = today % quotes.length;  // rotate by day
+  document.getElementById("dailyQuote").textContent = quotes[idx];
+}
+showDailyQuote();
   }
 </script>
+  
 </body>
 </html>
