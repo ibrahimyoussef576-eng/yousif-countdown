@@ -18,13 +18,8 @@
   }
   *{box-sizing:border-box}
   html,body{height:100%}
-  body{
-    margin:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-    color:var(--text); overflow-x:hidden;
-  }
-  .bg-animated{ position:fixed; inset:0; z-index:-3;
-    background: linear-gradient(135deg, var(--bg1), var(--bg2));
-    background-size: 200% 200%; animation: grad 18s ease-in-out infinite; }
+  body{ margin:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; color:var(--text); overflow-x:hidden; }
+  .bg-animated{ position:fixed; inset:0; z-index:-3; background: linear-gradient(135deg, var(--bg1), var(--bg2)); background-size: 200% 200%; animation: grad 18s ease-in-out infinite; }
   @keyframes grad{ 0%{background-position:0% 0%} 50%{background-position:100% 100%} 100%{background-position:0% 0%} }
   #particles{ position:fixed; inset:0; z-index:-2; pointer-events:none; }
 
@@ -47,8 +42,7 @@
     box-shadow: var(--shadow); overflow:hidden; backdrop-filter:saturate(160%) blur(8px);
   }
   .label{ font-size: clamp(16px, 2.2vw, 22px); font-weight:900; margin-bottom:12px; text-align:center; color:var(--cardText); }
-  .time{ font-variant-numeric: tabular-nums; font-weight:900; font-size: clamp(28px, 4vw, 40px); text-align:center;
-         color: var(--accent); text-shadow: 0 0 12px rgba(0,0,0,.55); transition: transform .18s ease; }
+  .time{ font-variant-numeric: tabular-nums; font-weight:900; font-size: clamp(28px, 4vw, 40px); text-align:center; color: var(--accent); text-shadow: 0 0 12px rgba(0,0,0,.55); transition: transform .18s ease; }
   .time.updated{ transform: scale(1.05); }
 
   .progress-wrap{ margin:18px auto 6px; width:92%; }
@@ -57,48 +51,33 @@
 
   .msg{ text-align:center; margin-top:12px; opacity:.95; font-weight:700; }
 
-  .mask{
-    position:absolute; inset:0; display:grid; place-items:center; text-align:center;
-    background: #000; color:#fff; z-index:2;
-  }
+  .mask{ position:absolute; inset:0; display:grid; place-items:center; text-align:center; background: #000; color:#fff; z-index:2; }
   .mask .inner{ display:flex; flex-direction:column; align-items:center; gap:10px; }
 
-  .scratchWrap{
-    position:absolute; inset:0; z-index:3; display:none;
-    touch-action: none;
-  }
+  .scratchWrap{ position:absolute; inset:0; z-index:3; display:none; touch-action: none; }
   #scratchCanvas{ width:100%; height:100%; display:block; }
 
   footer{ text-align:center; opacity:.85; margin:10px 0 10px; font-size:1rem; font-weight:700; }
-  #dailyQuote{ text-align:center; margin:0 12px 28px; font-style:italic; opacity:0.9; }
+  #dailyQuote{ text-align:center; margin:0 12px 12px; font-style:italic; opacity:0.9; }
+
+  /* Leaderboard */
+  #leaderboard{ width:min(620px, 94vw); margin:6px auto 28px; background: var(--card); border-radius:14px; padding:12px 14px; box-shadow: var(--shadow); backdrop-filter:saturate(160%) blur(8px); }
+  #leaderboard h3{ margin:0 0 8px; text-align:center; }
+  #leaderboard ol{ margin: 0; padding-left: 22px; }
+  #leaderboard li{ margin: 6px 0; }
+  .lb-meta{ opacity:.8; font-size:.9em; }
 
   #confetti, #emojiRain{ position:fixed; inset:0; pointer-events:none; z-index:10; }
 
   /* Game modal */
-  .modal{
-    position:fixed; inset:0; display:none; align-items:center; justify-content:center;
-    background: rgba(0,0,0,0.7); z-index:20;
-  }
-  .modalContent{
-    width:min(620px, 94vw); background: var(--card); color:var(--cardText);
-    border-radius:18px; box-shadow: var(--shadow); padding:16px 16px 22px; position:relative;
-    backdrop-filter:saturate(160%) blur(8px);
-  }
-  .modalHeader{
-    display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px;
-  }
-  .closeX{
-    background: rgba(255,255,255,0.22); border:none; border-radius:10px; padding:6px 10px; cursor:pointer;
-    font-weight:800;
-  }
-  #gameCanvas{
-    width:100%; height:420px; background: rgba(0,0,0,0.1); border-radius:14px; display:block;
-    touch-action: none;
-  }
-  .gameBar{
-    display:flex; justify-content:space-between; align-items:center; margin:10px 4px 4px; font-weight:800;
-  }
+  .modal{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background: rgba(0,0,0,0.7); z-index:20; }
+  .modalContent{ width:min(620px, 94vw); background: var(--card); color:var(--cardText); border-radius:18px; box-shadow: var(--shadow); padding:16px 16px 22px; position:relative; backdrop-filter:saturate(160%) blur(8px); }
+  .modalHeader{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px; }
+  .closeX{ background: rgba(255,255,255,0.22); border:none; border-radius:10px; padding:6px 10px; cursor:pointer; font-weight:800; }
+  #gameCanvas{ width:100%; height:420px; background: rgba(0,0,0,0.1); border-radius:14px; display:block; touch-action: none; }
+  .gameBar{ display:flex; justify-content:space-between; align-items:center; margin:10px 4px 4px; font-weight:800; }
   .gameHint{ opacity:.9; font-size:.95em; margin-top:6px; text-align:center;}
+  .nameBtn{ margin-left:6px; }
 </style>
 </head>
 <body>
@@ -145,12 +124,20 @@
 <footer>I’ll be back soon! Meow Meow Meow</footer>
 <div id="dailyQuote"></div>
 
+<!-- Leaderboard -->
+<div id="leaderboard">
+  <h3>🏆 Emoji Catch — Leaderboard (Top 10)</h3>
+  <ol id="lbList"></ol>
+  <div class="lb-meta" id="lbMeta"></div>
+</div>
+
 <!-- Game modal -->
 <div class="modal" id="gameModal" aria-hidden="true">
   <div class="modalContent">
     <div class="modalHeader">
       <strong>🎮 Emoji Catch — 30s</strong>
       <div>
+        <button class="closeX nameBtn" id="setNameBtn">Set Name</button>
         <button class="closeX" id="startGameBtn">Start</button>
         <button class="closeX" id="closeGameBtn">×</button>
       </div>
@@ -258,7 +245,6 @@
     ctx.globalCompositeOperation = "source-over";
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, wrapRect.width, wrapRect.height);
-
     ctx.globalCompositeOperation = "destination-out";
 
     let scratching = false;
@@ -280,7 +266,6 @@
     scratchWrap.addEventListener("mousedown", start);
     scratchWrap.addEventListener("mousemove", draw);
     window.addEventListener("mouseup", end);
-
     scratchWrap.addEventListener("touchstart", start, { passive: false });
     scratchWrap.addEventListener("touchmove",  draw,  { passive: false });
     scratchWrap.addEventListener("touchend",   end,   { passive: false });
@@ -303,16 +288,11 @@
 
     const clearCheck = setInterval(() => {
       const frac = clearedFraction();
-      if (frac > REVEAL_THRESHOLD) {
-        scratchWrap.style.display = "none";
-      }
+      if (frac > REVEAL_THRESHOLD) { scratchWrap.style.display = "none"; }
     }, 700);
 
     const obs = new MutationObserver(() => {
-      if (scratchWrap.style.display === "none") {
-        clearInterval(clearCheck);
-        obs.disconnect();
-      }
+      if (scratchWrap.style.display === "none") { clearInterval(clearCheck); obs.disconnect(); }
     });
     obs.observe(scratchWrap, { attributes: true, attributeFilter: ["style"] });
   }
@@ -394,8 +374,8 @@
     }catch(e){}
   }
 
-  /* ===== Daily Motivational Quote (single source of truth) ===== */
-  const quotes = [
+  /* ===== Daily Quote ===== */
+  const quotesList = [
     "Stay strong — every day is progress. 💪",
     "Patience is the companion of wisdom. ⏳",
     "One step closer to home. 🏠",
@@ -406,19 +386,58 @@
   ];
   function showDailyQuote(){
     const today = new Date().getDate();
-    const idx = today % quotes.length;
+    const idx = today % quotesList.length;
     const el = document.getElementById("dailyQuote");
-    if (el) el.textContent = quotes[idx];
+    if (el) el.textContent = quotesList[idx];
   }
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", showDailyQuote);
-  } else { showDailyQuote(); }
+  if (document.readyState === "loading") { document.addEventListener("DOMContentLoaded", showDailyQuote); } else { showDailyQuote(); }
+
+  /* ===== Leaderboard (localStorage) ===== */
+  const LB_KEY = "emojiCatchLeaderboard";
+  const NAME_KEY = "emojiCatchPlayerName";
+  function loadLB(){
+    try{ return JSON.parse(localStorage.getItem(LB_KEY)) || []; }catch(e){ return []; }
+  }
+  function saveLB(arr){ localStorage.setItem(LB_KEY, JSON.stringify(arr)); }
+  function getName(){ return localStorage.getItem(NAME_KEY) || ""; }
+  function setName(n){ localStorage.setItem(NAME_KEY, n); }
+
+  function addScore(name, score){
+    const lb = loadLB();
+    lb.push({ name: name || "Anonymous", score, date: new Date().toISOString() });
+    lb.sort((a,b)=> b.score - a.score || new Date(a.date) - new Date(b.date));
+    const top = lb.slice(0,10);
+    saveLB(top);
+    renderLB();
+  }
+  function renderLB(){
+    const lb = loadLB();
+    const list = document.getElementById("lbList");
+    const meta = document.getElementById("lbMeta");
+    list.innerHTML = "";
+    if(lb.length===0){
+      list.innerHTML = "<li>No scores yet. Be the first! 🎯</li>";
+      meta.textContent = "Scores are saved on this device (local).";
+      return;
+    }
+    lb.forEach((row, i)=>{
+      const d = new Date(row.date);
+      const li = document.createElement("li");
+      li.innerHTML = `<strong>${i+1}.</strong> ${escapeHTML(row.name)} — <strong>${row.score}</strong> <span class="lb-meta">(${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})})</span>`;
+      list.appendChild(li);
+    });
+    meta.textContent = "Scores are saved on this device (local).";
+  }
+  function escapeHTML(s){ return (s||"").toString().replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m])); }
+
+  renderLB();
 
   /* ===== Mini Game: Emoji Catch ===== */
   const gameBtn = document.getElementById("gameBtn");
   const gameModal = document.getElementById("gameModal");
   const startGameBtn = document.getElementById("startGameBtn");
   const closeGameBtn = document.getElementById("closeGameBtn");
+  const setNameBtn = document.getElementById("setNameBtn");
   const gameCanvas = document.getElementById("gameCanvas");
   const scoreEl = document.getElementById("score");
   const timeEl = document.getElementById("time");
@@ -431,10 +450,28 @@
   best = +localStorage.getItem("emojiCatchBest") || 0;
   bestEl.textContent = best;
 
-  function openGame(){ gameModal.style.display="flex"; resizeGame(); }
+  function openGame(){
+    gameModal.style.display="flex";
+    resizeGame();
+    // If no name yet, ask once
+    if(!getName()){
+      askForName();
+    }
+  }
   function closeGame(){ gameModal.style.display="none"; stopGame(); }
   gameBtn.onclick = openGame;
   closeGameBtn.onclick = closeGame;
+  setNameBtn.onclick = askForName;
+
+  function askForName(){
+    const current = getName();
+    const n = prompt("Enter your name for the leaderboard:", current || "");
+    if(n !== null){
+      const trimmed = (n || "").trim().slice(0,20);
+      setName(trimmed || "Anonymous");
+      alert(`Name set to: ${getName()}`);
+    }
+  }
 
   function resizeGame(){
     const DPR = window.devicePixelRatio || 1;
@@ -516,34 +553,24 @@
       timeEl.textContent = tLeft;
       if(tLeft <= 0){
         running = false;
+        // update personal best
         if(score > best){ best = score; localStorage.setItem("emojiCatchBest", best); }
         bestEl.textContent = best;
-        if(score >= best){ confettiBurst(800, 120); }
+
+        // Ask to save to leaderboard
+        if(score > 0){
+          const current = getName() || "";
+          let name = current || prompt("Great round! Enter your name for the leaderboard:", "") || "";
+          name = (name.trim() || "Anonymous").slice(0,20);
+          setName(name);
+          addScore(name, score);
+          confettiBurst(800, 120);
+        }
       }else{
         countdownTick();
       }
     }, 1000);
   }
-
-  /* ===== Daily Quote (single block) ===== */
-  const quotesList = [
-    "Stay strong — every day is progress. 💪",
-    "Patience is the companion of wisdom. ⏳",
-    "One step closer to home. 🏠",
-    "Good things are coming. ✨",
-    "The wait makes the return sweeter. ❤️",
-    "Keep going — you're doing amazing. 🚀",
-    "Almost there! 🙌"
-  ];
-  function showDailyQuote(){
-    const today = new Date().getDate();
-    const idx = today % quotesList.length;
-    const el = document.getElementById("dailyQuote");
-    if (el) el.textContent = quotesList[idx];
-  }
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", showDailyQuote);
-  } else { showDailyQuote(); }
 </script>
 </body>
 </html>
