@@ -157,7 +157,7 @@ footer{ text-align:center; opacity:.85; margin:10px 0 10px; font-size:1rem; font
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-analytics.js";
   import {
     getFirestore, collection, addDoc, serverTimestamp,
-    query, orderBy, limit, getDocs
+    query, orderBy, limit, getDocs, where
   } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -180,13 +180,21 @@ footer{ text-align:center; opacity:.85; margin:10px 0 10px; font-size:1rem; font
   function getName(){ return localStorage.getItem(NAME_KEY) || ""; }
   function setName(n){ localStorage.setItem(NAME_KEY, n); }
 
-  // remember latest submitted score so we always show it
-  window._lastScore = null;
-
   // Escape helper
   function esc(s){ return (s||"").replace(/[&<>\"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;" }[m])); }
 
-  // Render Top 10 (Option A: no composite index)
+  // Get best score for a specific name (no composite index needed)
+  async function fetchBestForName(name){
+    const snap = await getDocs(query(scoresCol, where("name","==",name), limit(50)));
+    let best = 0;
+    snap.forEach(doc=>{
+      const d = doc.data();
+      if (typeof d.score === "number" && d.score > best) best = d.score;
+    });
+    return best;
+  }
+
+  // Render Top 10 UNIQUE names (best score per name)
   async function renderLB(){
     const list = document.getElementById("lbList");
     const meta = document.getElementById("lbMeta");
@@ -194,52 +202,38 @@ footer{ text-align:center; opacity:.85; margin:10px 0 10px; font-size:1rem; font
 
     list.innerHTML = "<li>Loading…</li>";
     try{
-      const qTop = query(scoresCol, orderBy("score","desc"), limit(10));
+      // Grab more than 10 to dedupe by name client-side
+      const qTop = query(scoresCol, orderBy("score","desc"), limit(200));
       const snap = await getDocs(qTop);
 
-      const rows = [];
-      snap.forEach(doc => {
+      const seen = new Set();
+      const unique = [];
+      snap.forEach(doc=>{
         const d = doc.data();
-        rows.push({
-          name: d.name || "Anonymous",
-          score: d.score || 0,
-          createdAt: d.createdAt?.toDate ? d.createdAt.toDate() : new Date()
-        });
+        const name = (d.name || "Anonymous").toString();
+        const score = Number(d.score) || 0;
+        const createdAt = d.createdAt?.toDate ? d.createdAt.toDate() : new Date();
+        if (!seen.has(name)) {
+          seen.add(name);
+          unique.push({ name, score, createdAt });
+        }
       });
 
-      // tie-break oldest-first on client
-      rows.sort((a,b) => b.score - a.score || a.createdAt - b.createdAt);
+      // Already sorted by score due to query; take first 10 unique
+      const top10 = unique.slice(0,10);
 
       list.innerHTML = "";
-      if(rows.length === 0){
+      if(top10.length === 0){
         list.innerHTML = "<li>No scores yet. Be the first! 🎯</li>";
       } else {
-        rows.forEach((row, i)=>{
-          const li = document.createElement("li");
+        top10.forEach((row, i)=>{
           const ts = `${row.createdAt.toLocaleDateString()} ${row.createdAt.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
+          const li = document.createElement("li");
           li.innerHTML = `<strong>${i+1}.</strong> ${esc(row.name)} — <strong>${row.score}</strong> <span class="lb-meta">(${ts})</span>`;
           list.appendChild(li);
         });
       }
-
-      // Show your latest even if not Top 10
-      if (window._lastScore) {
-        const inTop = rows.some(r =>
-          r.score === window._lastScore.score &&
-          r.name === window._lastScore.name &&
-          Math.abs(r.createdAt - window._lastScore.createdAt) < 2000
-        );
-        if (!inTop) {
-          const li = document.createElement("li");
-          const ts = `${window._lastScore.createdAt.toLocaleDateString()} ${window._lastScore.createdAt.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
-          li.innerHTML = `<em>• Your latest:</em> <strong>${esc(window._lastScore.name)}</strong> — <strong>${window._lastScore.score}</strong> <span class="lb-meta">(${ts}, not in Top 10)</span>`;
-          li.style.marginTop = "10px";
-          li.style.opacity = "0.9";
-          list.appendChild(li);
-        }
-      }
-
-      meta.textContent = "Global scores — powered by Firebase Firestore.";
+      meta.textContent = "Top 10 unique players — best score per name.";
     }catch(err){
       list.innerHTML = "<li>Could not load leaderboard. 😿</li>";
       meta.textContent = String(err);
@@ -247,13 +241,18 @@ footer{ text-align:center; opacity:.85; margin:10px 0 10px; font-size:1rem; font
     }
   }
 
-  // Add a score (always called each round)
+  // Save score only if it beats this name's previous best
   async function addScore(name, score){
     try{
       const cleanName = (name || "Anonymous").toString().trim().slice(0,20);
       const safeScore = Math.max(0, Math.min(500, Number(score) || 0));
 
-      window._lastScore = { name: cleanName, score: safeScore, createdAt: new Date() };
+      const prevBest = await fetchBestForName(cleanName);
+      if (safeScore <= prevBest) {
+        // No write; just refresh the board
+        await renderLB();
+        return;
+      }
 
       await addDoc(scoresCol, {
         name: cleanName,
@@ -415,7 +414,7 @@ const quotesList = [
 function showDailyQuote(){ const today=new Date().getDate(); const idx=today%quotesList.length; const el=document.getElementById("dailyQuote"); if(el) el.textContent=quotesList[idx]; }
 if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded", showDailyQuote); } else { showDailyQuote(); }
 
-/* === Mini Game: Shape Catch (with Bombs) === */
+/* === Mini Game: Shape Catch (with Bombs & 'M' boxes) === */
 const gameBtn=document.getElementById("gameBtn");
 const gameModal=document.getElementById("gameModal");
 const startGameBtn=document.getElementById("startGameBtn");
@@ -459,7 +458,7 @@ window.addEventListener("resize", ()=>{ if(gameModal.style.display==="flex") res
 /* controls */
 let keys={};
 window.addEventListener("keydown", e=>{ if(gameModal.style.display!=="flex") return; if(e.key==="ArrowLeft"||e.key==="ArrowRight"){ keys[e.key]=true; e.preventDefault(); }});
-window.addEventListener("keyup",   e=>{ if(e.key==="ArrowLeft"||e.key==="ArrowRight"){ keys[e.key]=false; }});
+window.addEventListener("keyup",   e=>{ if(e.key==="ArrowLeft"||e.key==="Right"){ keys[e.key]=false; }});
 function moveTo(clientX){ const rect=gameCanvas.getBoundingClientRect(); const x=Math.max(0,Math.min(gw,clientX-rect.left)); catcher.x=x; }
 gameCanvas.addEventListener("mousemove", e=> moveTo(e.clientX));
 gameCanvas.addEventListener("touchstart", e=>{ e.preventDefault(); if(e.touches[0]) moveTo(e.touches[0].clientX);},{passive:false});
@@ -468,37 +467,45 @@ gameCanvas.addEventListener("touchmove",  e=>{ e.preventDefault(); if(e.touches[
 /* items */
 const COLORS = ["#22d3ee","#60a5fa","#f472b6","#34d399","#fbbf24","#f87171","#a78bfa"];
 function spawnDrop(){
-  // 20% bomb, 75% normal +1, 5% rare gem +3
+  // 20% bomb, 75% normal +1, 5% rare +3 (gold)
   const r = Math.random();
   let kind, value, color;
   if (r < 0.20) { kind="bomb"; value=-3; color="#111"; }
   else if (r < 0.95) { kind="good"; value=1; color=COLORS[Math|Math.random()*COLORS.length]; }
   else { kind="rare"; value=3; color="#ffd166"; }
-  const size = 18 + Math.random()*18; // visual scale
+  const size = 14 + Math.random()*8; // smaller boxes
   drops.push({ kind, value, color, x: Math.random()*gw, y: -30, vy: 2.2 + Math.random()*2.6, size });
 }
 
 function drawItem(ctx, d){
   ctx.save(); ctx.translate(d.x, d.y);
   if (d.kind === "bomb") {
+    // bomb: black circle + tiny fuse
     ctx.fillStyle = "#111";
-    ctx.beginPath(); ctx.arc(0, 0, d.size*0.7, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, 0, d.size*0.9, 0, Math.PI*2); ctx.fill();
     ctx.strokeStyle = "#fffb"; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(d.size*0.3, -d.size*0.7);
-    ctx.bezierCurveTo(d.size*0.6, -d.size*1.2, d.size*0.8, -d.size*1.2, d.size*1.0, -d.size*0.9);
+    ctx.beginPath(); ctx.moveTo(d.size*0.4, -d.size*0.9);
+    ctx.bezierCurveTo(d.size*0.6, -d.size*1.4, d.size*0.9, -d.size*1.3, d.size*1.1, -d.size*1.0);
     ctx.stroke();
     ctx.fillStyle = "#ff4d4d";
-    ctx.beginPath(); ctx.arc(d.size*1.05, -d.size*0.95, 3.5, 0, Math.PI*2); ctx.fill();
-  } else if (d.kind === "rare") {
-    ctx.fillStyle = d.color;
-    const R = d.size, r = R*0.45;
-    ctx.beginPath();
-    for(let i=0;i<10;i++){ const a=i*Math.PI/5, rad=i%2===0?R:r; ctx.lineTo(Math.cos(a)*rad, Math.sin(a)*rad); }
-    ctx.closePath(); ctx.shadowColor="#0006"; ctx.shadowBlur=10; ctx.fill();
+    ctx.beginPath(); ctx.arc(d.size*1.15, -d.size*1.05, 3.2, 0, Math.PI*2); ctx.fill();
   } else {
+    // Good / Rare: small rounded box with "M" inside
     ctx.fillStyle = d.color;
-    const s = d.size, rr = s*0.35;
-    roundRect(ctx, -s, -s, s*2, s*2, rr); ctx.fill();
+    const s = d.size, r = s*0.35;
+    roundRect(ctx, -s, -s, s*2, s*2, r); ctx.fill();
+
+    ctx.fillStyle = "#fff";
+    ctx.font = `${Math.round(s*1.5)}px system-ui`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("M", 0, 0);
+    if (d.kind === "rare") {
+      ctx.strokeStyle = "rgba(255,255,255,0.85)";
+      ctx.lineWidth = 1.5;
+      roundRect(ctx, -s, -s, s*2, s*2, r);
+      ctx.stroke();
+    }
   }
   ctx.restore();
 }
@@ -547,7 +554,7 @@ function loop(now){
     const d=drops[i]; d.y+=d.vy; drawItem(gCtx,d);
 
     const withinX=Math.abs(d.x-catcher.x)<(catcher.w/2);
-    const withinY=Math.abs(d.y-catcher.y)<(catcher.h+Math.max(12,d.size*0.6));
+    const withinY=Math.abs(d.y-catcher.y)<(catcher.h+Math.max(10,d.size*0.6));
     if(withinX&&withinY){
       drops.splice(i,1);
       score += d.value;
@@ -572,13 +579,12 @@ function countdownTick(){
       if(score>best){ best=score; localStorage.setItem("shapeCatchBest",best); }
       bestEl.textContent=best;
 
-      // ALWAYS submit the round’s score
       if(score>0 && window.addScore){
         const current = window.getName ? window.getName() : "";
         let name = current || prompt("Great round! Enter your name for the leaderboard:", "") || "";
         name=(name.trim()||"Anonymous").slice(0,20);
         if(window.setName) window.setName(name);
-        window.addScore(name, score);
+        window.addScore(name, score); // saves only if it beats previous best
       }
       confettiBurst(800, 120);
     } else {
