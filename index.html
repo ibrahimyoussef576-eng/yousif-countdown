@@ -77,6 +77,15 @@ footer{ text-align:center; opacity:.85; margin:10px 0 10px; font-size:1rem; font
 .gameBar{ display:flex; justify-content:space-between; align-items:center; margin:10px 4px 4px; font-weight:800; }
 .gameHint{ opacity:.9; font-size:.95em; margin-top:6px; text-align:center;}
 .nameBtn{ margin-left:6px; }
+
+/* DOUBLE MODE badge */
+.doubleBadge{
+  position:absolute; top:10px; left:50%; transform:translateX(-50%);
+  background:#7c3aed; color:#fff; font-weight:900; padding:4px 10px; border-radius:999px;
+  box-shadow: var(--shadow); opacity:0; transition: opacity .2s ease;
+  pointer-events:none; z-index:30;
+}
+.doubleBadge.show{ opacity:1; }
 </style>
 </head>
 <body>
@@ -146,6 +155,7 @@ footer{ text-align:center; opacity:.85; margin:10px 0 10px; font-size:1rem; font
       <div>Time: <span id="time">30</span>s</div>
       <div>Best: <span id="best">0</span></div>
     </div>
+    <div class="doubleBadge" id="doubleBadge">×2 MODE</div>
     <canvas id="gameCanvas"></canvas>
     <div class="gameHint">Move with ←/→ or mouse. On phone: drag left/right.</div>
   </div>
@@ -183,7 +193,7 @@ footer{ text-align:center; opacity:.85; margin:10px 0 10px; font-size:1rem; font
   // Escape helper
   function esc(s){ return (s||"").replace(/[&<>\"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;" }[m])); }
 
-  // Get best score for a specific name (no composite index needed)
+  // Get best score for a specific name
   async function fetchBestForName(name){
     const snap = await getDocs(query(scoresCol, where("name","==",name), limit(50)));
     let best = 0;
@@ -202,7 +212,6 @@ footer{ text-align:center; opacity:.85; margin:10px 0 10px; font-size:1rem; font
 
     list.innerHTML = "<li>Loading…</li>";
     try{
-      // Grab more than 10 to dedupe by name client-side
       const qTop = query(scoresCol, orderBy("score","desc"), limit(200));
       const snap = await getDocs(qTop);
 
@@ -219,7 +228,6 @@ footer{ text-align:center; opacity:.85; margin:10px 0 10px; font-size:1rem; font
         }
       });
 
-      // Already sorted by score due to query; take first 10 unique
       const top10 = unique.slice(0,10);
 
       list.innerHTML = "";
@@ -249,7 +257,6 @@ footer{ text-align:center; opacity:.85; margin:10px 0 10px; font-size:1rem; font
 
       const prevBest = await fetchBestForName(cleanName);
       if (safeScore <= prevBest) {
-        // No write; just refresh the board
         await renderLB();
         return;
       }
@@ -414,7 +421,7 @@ const quotesList = [
 function showDailyQuote(){ const today=new Date().getDate(); const idx=today%quotesList.length; const el=document.getElementById("dailyQuote"); if(el) el.textContent=quotesList[idx]; }
 if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded", showDailyQuote); } else { showDailyQuote(); }
 
-/* === Mini Game: Shape Catch (with Bombs & 'M' boxes) === */
+/* === Mini Game: Shape Catch (Bombs + Tiny Fast ×2 Mode) === */
 const gameBtn=document.getElementById("gameBtn");
 const gameModal=document.getElementById("gameModal");
 const startGameBtn=document.getElementById("startGameBtn");
@@ -424,10 +431,12 @@ const gameCanvas=document.getElementById("gameCanvas");
 const scoreEl=document.getElementById("score");
 const timeEl=document.getElementById("time");
 const bestEl=document.getElementById("best");
+const doubleBadge=document.getElementById("doubleBadge");
 
 let gCtx,gw,gh,rafId,running=false,tLeft=30,score=0,best=0,lastSpawn=0;
 let catcher,drops=[];
-let flashUntil=0; // brief red flash when bomb hit
+let flashUntil=0; // red flash when bomb hit
+let doubleUntil=0; // timestamp until double points active
 
 best=+localStorage.getItem("shapeCatchBest")||0; bestEl.textContent=best;
 
@@ -458,29 +467,50 @@ window.addEventListener("resize", ()=>{ if(gameModal.style.display==="flex") res
 /* controls */
 let keys={};
 window.addEventListener("keydown", e=>{ if(gameModal.style.display!=="flex") return; if(e.key==="ArrowLeft"||e.key==="ArrowRight"){ keys[e.key]=true; e.preventDefault(); }});
-window.addEventListener("keyup",   e=>{ if(e.key==="ArrowLeft"||e.key==="Right"){ keys[e.key]=false; }});
+window.addEventListener("keyup",   e=>{ if(e.key==="ArrowLeft"||e.key==="ArrowRight"){ keys[e.key]=false; }});
 function moveTo(clientX){ const rect=gameCanvas.getBoundingClientRect(); const x=Math.max(0,Math.min(gw,clientX-rect.left)); catcher.x=x; }
 gameCanvas.addEventListener("mousemove", e=> moveTo(e.clientX));
 gameCanvas.addEventListener("touchstart", e=>{ e.preventDefault(); if(e.touches[0]) moveTo(e.touches[0].clientX);},{passive:false});
 gameCanvas.addEventListener("touchmove",  e=>{ e.preventDefault(); if(e.touches[0]) moveTo(e.touches[0].clientX);},{passive:false});
 
-/* items */
+/* item spawning */
 const COLORS = ["#22d3ee","#60a5fa","#f472b6","#34d399","#fbbf24","#f87171","#a78bfa"];
+function isDoubleMode(){ return performance.now() < doubleUntil; }
+
 function spawnDrop(){
-  // 20% bomb, 75% normal +1, 5% rare +3 (gold)
-  const r = Math.random();
+  // Spawn mix changes if Double Mode is active (more bombs!)
+  // Base: 10% x2, 20% bomb, 65% good, 5% rare
+  // Double Mode: 15% x2, 35% bomb, 45% good, 5% rare
+  const dm = isDoubleMode();
+  const r = Math.random()*100;
   let kind, value, color;
-  if (r < 0.20) { kind="bomb"; value=-3; color="#111"; }
-  else if (r < 0.95) { kind="good"; value=1; color=COLORS[Math|Math.random()*COLORS.length]; }
-  else { kind="rare"; value=3; color="#ffd166"; }
-  const size = 14 + Math.random()*8; // smaller boxes
-  drops.push({ kind, value, color, x: Math.random()*gw, y: -30, vy: 2.2 + Math.random()*2.6, size });
+
+  if ((!dm && r < 10) || (dm && r < 15)) {
+    kind="double"; value=2; color="#a855f7";           // purple ×2 block (tiny & fast)
+  } else if ((!dm && r < 30) || (dm && r < 50)) {
+    kind="bomb"; value=-3; color="#111";               // more bombs in double mode
+  } else if ((!dm && r < 95) || (dm && r < 95)) {
+    kind="good"; value=1; color=COLORS[Math|Math.random()*COLORS.length];
+  } else {
+    kind="rare"; value=3; color="#ffd166";
+  }
+
+  // sizes & speeds
+  let size, vy;
+  if (kind === "double") { size = 10 + Math.random()*5; vy = 3.6 + Math.random()*2.2; }
+  else if (kind === "bomb") { size = 16 + Math.random()*10; vy = 2.4 + Math.random()*2.6; }
+  else if (kind === "rare") { size = 16 + Math.random()*10; vy = 2.4 + Math.random()*2.4; }
+  else { size = 14 + Math.random()*8; vy = 2.2 + Math.random()*2.2; }
+
+  // faster overall when in double mode
+  if (dm) vy *= 1.15;
+
+  drops.push({ kind, value, color, x: Math.random()*gw, y: -30, vy, size });
 }
 
 function drawItem(ctx, d){
   ctx.save(); ctx.translate(d.x, d.y);
   if (d.kind === "bomb") {
-    // bomb: black circle + tiny fuse
     ctx.fillStyle = "#111";
     ctx.beginPath(); ctx.arc(0, 0, d.size*0.9, 0, Math.PI*2); ctx.fill();
     ctx.strokeStyle = "#fffb"; ctx.lineWidth = 2;
@@ -489,23 +519,30 @@ function drawItem(ctx, d){
     ctx.stroke();
     ctx.fillStyle = "#ff4d4d";
     ctx.beginPath(); ctx.arc(d.size*1.15, -d.size*1.05, 3.2, 0, Math.PI*2); ctx.fill();
-  } else {
-    // Good / Rare: small rounded box with "M" inside
+  } else if (d.kind === "rare") {
     ctx.fillStyle = d.color;
-    const s = d.size, r = s*0.35;
-    roundRect(ctx, -s, -s, s*2, s*2, r); ctx.fill();
-
+    const R = d.size, r = R*0.45;
+    ctx.beginPath();
+    for(let i=0;i<10;i++){ const a=i*Math.PI/5, rad=i%2===0?R:r; ctx.lineTo(Math.cos(a)*rad, Math.sin(a)*rad); }
+    ctx.closePath(); ctx.shadowColor="#0006"; ctx.shadowBlur=10; ctx.fill();
+  } else if (d.kind === "double") {
+    // tiny purple block with “×2”
+    ctx.fillStyle = d.color;
+    const s = d.size, rr = s*0.35;
+    roundRect(ctx, -s, -s, s*2, s*2, rr); ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.font = `${Math.max(10, Math.round(s*1.3))}px system-ui`;
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText("×2", 0, 0);
+  } else {
+    // good gem: rounded square with M
+    ctx.fillStyle = d.color;
+    const s = d.size, rr = s*0.35;
+    roundRect(ctx, -s, -s, s*2, s*2, rr); ctx.fill();
     ctx.fillStyle = "#fff";
     ctx.font = `${Math.round(s*1.5)}px system-ui`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText("M", 0, 0);
-    if (d.kind === "rare") {
-      ctx.strokeStyle = "rgba(255,255,255,0.85)";
-      ctx.lineWidth = 1.5;
-      roundRect(ctx, -s, -s, s*2, s*2, r);
-      ctx.stroke();
-    }
   }
   ctx.restore();
 }
@@ -527,7 +564,8 @@ function drawCatcher(ctx){
 
 function startGame(){ 
   drops=[]; score=0; scoreEl.textContent=score; tLeft=30; timeEl.textContent=tLeft; 
-  running=true; lastSpawn=performance.now(); loop(performance.now()); countdownTick(); 
+  running=true; lastSpawn=performance.now(); doubleUntil=0; doubleBadge.classList.remove("show");
+  loop(performance.now()); countdownTick(); 
 }
 function stopGame(){ running=false; cancelAnimationFrame(rafId); }
 startGameBtn.onclick=startGame;
@@ -536,13 +574,20 @@ function loop(now){
   if(!running) return;
   rafId=requestAnimationFrame(loop);
 
-  if(now-lastSpawn > 250 + Math.random()*260){ spawnDrop(); lastSpawn=now; }
+  // spawn pacing (faster in double mode)
+  const dm = isDoubleMode();
+  const interval = dm ? 200 : 260;
+  if(now-lastSpawn > interval + Math.random()*220){ spawnDrop(); lastSpawn=now; }
 
-  const speed=7; if(keys["ArrowLeft"]) catcher.x-=speed; if(keys["ArrowRight"]) catcher.x+=speed;
+  // controls
+  const speed=7 + (dm ? 0.5 : 0);
+  if(keys["ArrowLeft"]) catcher.x-=speed; 
+  if(keys["ArrowRight"]) catcher.x+=speed;
   catcher.x=Math.max(catcher.w/2,Math.min(gw-catcher.w/2,catcher.x));
 
   gCtx.clearRect(0,0,gw,gh);
 
+  // bomb hit flash
   if (flashUntil > performance.now()){
     gCtx.fillStyle = "rgba(255,0,0,0.15)";
     gCtx.fillRect(0,0,gw,gh);
@@ -557,17 +602,31 @@ function loop(now){
     const withinY=Math.abs(d.y-catcher.y)<(catcher.h+Math.max(10,d.size*0.6));
     if(withinX&&withinY){
       drops.splice(i,1);
-      score += d.value;
+
+      if (d.kind === "double") {
+        // grant +2 immediately, and activate Double Mode (7s)
+        score += 2;
+        doubleUntil = performance.now() + 7000;
+        doubleBadge.classList.add("show");
+        try{ navigator.vibrate && navigator.vibrate([50,40,80]); }catch(e){}
+      } else {
+        const mult = isDoubleMode() ? 2 : 1;
+        score += d.value * mult;
+        if (d.value < 0) {
+          flashUntil = performance.now()+200;
+          try{ navigator.vibrate && navigator.vibrate(120); }catch(e){}
+        }
+      }
+
       if(score<0) score=0;
       scoreEl.textContent=score;
-      if(d.value<0){
-        flashUntil = performance.now()+200;
-        try{ navigator.vibrate && navigator.vibrate(120); }catch(e){}
-      }
       continue;
     }
     if(d.y>gh+40){ drops.splice(i,1); }
   }
+
+  // hide badge if double mode ended
+  if (!isDoubleMode()) doubleBadge.classList.remove("show");
 }
 
 function countdownTick(){
@@ -584,7 +643,7 @@ function countdownTick(){
         let name = current || prompt("Great round! Enter your name for the leaderboard:", "") || "";
         name=(name.trim()||"Anonymous").slice(0,20);
         if(window.setName) window.setName(name);
-        window.addScore(name, score); // saves only if it beats previous best
+        window.addScore(name, score); // will save only if it beats previous best
       }
       confettiBurst(800, 120);
     } else {
@@ -592,9 +651,6 @@ function countdownTick(){
     }
   },1000);
 }
-
-/* Initial leaderboard render in case module loaded first */
-if(window.renderLB) window.renderLB();
 </script>
 </body>
 </html>
