@@ -125,7 +125,7 @@ footer{ text-align:center; opacity:.85; margin:10px 0 10px; font-size:1rem; font
 
 <!-- Leaderboard -->
 <div id="leaderboard">
-  <h3>Emoji Catch Leaderboard (Top 10)</h3>
+  <h3>🏆 Shape Catch — Leaderboard (Top 10)</h3>
   <ol id="lbList"></ol>
   <div class="lb-meta" id="lbMeta"></div>
 </div>
@@ -134,7 +134,7 @@ footer{ text-align:center; opacity:.85; margin:10px 0 10px; font-size:1rem; font
 <div class="modal" id="gameModal" aria-hidden="true">
   <div class="modalContent">
     <div class="modalHeader">
-      <strong>🎮 Emoji Catch — 30s</strong>
+      <strong>🎮 Shape Catch — 30s</strong>
       <div>
         <button class="closeX nameBtn" id="setNameBtn">Set Name</button>
         <button class="closeX" id="startGameBtn">Start</button>
@@ -153,7 +153,6 @@ footer{ text-align:center; opacity:.85; margin:10px 0 10px; font-size:1rem; font
 
 <!-- ========= 1) Firebase + GLOBAL LEADERBOARD (MODULE) ========= -->
 <script type="module">
-  // Firebase SDK (v12.2.1)
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-analytics.js";
   import {
@@ -161,7 +160,6 @@ footer{ text-align:center; opacity:.85; margin:10px 0 10px; font-size:1rem; font
     query, orderBy, limit, getDocs
   } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-  // Your config
   const firebaseConfig = {
     apiKey: "AIzaSyDAyKfDDVeZpidguVlhSzjXzXD0Ixv5DTo",
     authDomain: "countdown-87ab5.firebaseapp.com",
@@ -173,17 +171,20 @@ footer{ text-align:center; opacity:.85; margin:10px 0 10px; font-size:1rem; font
   };
 
   const app = initializeApp(firebaseConfig);
-  getAnalytics(app); // optional
+  getAnalytics(app);
   const db  = getFirestore(app);
   const scoresCol = collection(db, "scores");
 
-  // Name helpers (local only)
-  const NAME_KEY = "emojiCatchPlayerName";
+  // Local name helpers
+  const NAME_KEY = "shapeCatchPlayerName";
   function getName(){ return localStorage.getItem(NAME_KEY) || ""; }
   function setName(n){ localStorage.setItem(NAME_KEY, n); }
 
-  // Will store the most recent submitted score so it always shows
+  // remember latest submitted score so we always show it
   window._lastScore = null;
+
+  // Escape helper
+  function esc(s){ return (s||"").replace(/[&<>\"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;" }[m])); }
 
   // Render Top 10 (Option A: no composite index)
   async function renderLB(){
@@ -216,12 +217,12 @@ footer{ text-align:center; opacity:.85; margin:10px 0 10px; font-size:1rem; font
         rows.forEach((row, i)=>{
           const li = document.createElement("li");
           const ts = `${row.createdAt.toLocaleDateString()} ${row.createdAt.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
-          li.innerHTML = `<strong>${i+1}.</strong> ${escapeHTML(row.name)} — <strong>${row.score}</strong> <span class="lb-meta">(${ts})</span>`;
+          li.innerHTML = `<strong>${i+1}.</strong> ${esc(row.name)} — <strong>${row.score}</strong> <span class="lb-meta">(${ts})</span>`;
           list.appendChild(li);
         });
       }
 
-      // Always show your latest score even if not in Top 10
+      // Show your latest even if not Top 10
       if (window._lastScore) {
         const inTop = rows.some(r =>
           r.score === window._lastScore.score &&
@@ -231,14 +232,14 @@ footer{ text-align:center; opacity:.85; margin:10px 0 10px; font-size:1rem; font
         if (!inTop) {
           const li = document.createElement("li");
           const ts = `${window._lastScore.createdAt.toLocaleDateString()} ${window._lastScore.createdAt.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`;
-          li.innerHTML = `<em>• Your latest:</em> <strong>${escapeHTML(window._lastScore.name)}</strong> — <strong>${window._lastScore.score}</strong> <span class="lb-meta">(${ts}, not in Top 10)</span>`;
+          li.innerHTML = `<em>• Your latest:</em> <strong>${esc(window._lastScore.name)}</strong> — <strong>${window._lastScore.score}</strong> <span class="lb-meta">(${ts}, not in Top 10)</span>`;
           li.style.marginTop = "10px";
           li.style.opacity = "0.9";
           list.appendChild(li);
         }
       }
 
-      meta.textContent = "You suck...";
+      meta.textContent = "Global scores — powered by Firebase Firestore.";
     }catch(err){
       list.innerHTML = "<li>Could not load leaderboard. 😿</li>";
       meta.textContent = String(err);
@@ -246,13 +247,12 @@ footer{ text-align:center; opacity:.85; margin:10px 0 10px; font-size:1rem; font
     }
   }
 
-  // Add a score to Firestore (called every round, NOT just best)
+  // Add a score (always called each round)
   async function addScore(name, score){
     try{
       const cleanName = (name || "Anonymous").toString().trim().slice(0,20);
       const safeScore = Math.max(0, Math.min(500, Number(score) || 0));
 
-      // Remember locally so we can show it even if not in Top 10
       window._lastScore = { name: cleanName, score: safeScore, createdAt: new Date() };
 
       await addDoc(scoresCol, {
@@ -268,12 +268,11 @@ footer{ text-align:center; opacity:.85; margin:10px 0 10px; font-size:1rem; font
     }
   }
 
-  // expose for non-module script
+  // expose to non-module script
   window.renderLB = renderLB;
   window.addScore = addScore;
   window.getName = getName;
   window.setName = setName;
-  window.escapeHTML = (s)=> (s||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
 
   renderLB();
 </script>
@@ -416,7 +415,7 @@ const quotesList = [
 function showDailyQuote(){ const today=new Date().getDate(); const idx=today%quotesList.length; const el=document.getElementById("dailyQuote"); if(el) el.textContent=quotesList[idx]; }
 if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded", showDailyQuote); } else { showDailyQuote(); }
 
-/* === Mini Game: Emoji Catch === */
+/* === Mini Game: Shape Catch (with Bombs) === */
 const gameBtn=document.getElementById("gameBtn");
 const gameModal=document.getElementById("gameModal");
 const startGameBtn=document.getElementById("startGameBtn");
@@ -426,9 +425,12 @@ const gameCanvas=document.getElementById("gameCanvas");
 const scoreEl=document.getElementById("score");
 const timeEl=document.getElementById("time");
 const bestEl=document.getElementById("best");
+
 let gCtx,gw,gh,rafId,running=false,tLeft=30,score=0,best=0,lastSpawn=0;
-const EMOJIS="❤️✨🎉💙💛💚💜⭐️🥳"; let catcher,drops=[];
-best=+localStorage.getItem("emojiCatchBest")||0; bestEl.textContent=best;
+let catcher,drops=[];
+let flashUntil=0; // brief red flash when bomb hit
+
+best=+localStorage.getItem("shapeCatchBest")||0; bestEl.textContent=best;
 
 function openGame(){ gameModal.style.display="flex"; resizeGame(); if(!window.getName || !window.getName() || window.getName().trim()===""){ askForName(); } }
 function closeGame(){ gameModal.style.display="none"; stopGame(); }
@@ -449,45 +451,127 @@ function resizeGame(){
   gw=gameCanvas.clientWidth; gh=gameCanvas.clientHeight;
   gameCanvas.width=Math.floor(gw*DPR); gameCanvas.height=Math.floor(gh*DPR);
   gCtx=gameCanvas.getContext("2d"); gCtx.setTransform(DPR,0,0,DPR,0,0);
-  const w=Math.max(80,gw*0.18); catcher=catcher||{x:gw/2,y:gh-24,w,h:14,vx:0};
+  const w=Math.max(90,gw*0.2);
+  catcher = { x: gw/2, y: gh-26, w, h: 16 };
 }
 window.addEventListener("resize", ()=>{ if(gameModal.style.display==="flex") resizeGame(); });
 
+/* controls */
 let keys={};
 window.addEventListener("keydown", e=>{ if(gameModal.style.display!=="flex") return; if(e.key==="ArrowLeft"||e.key==="ArrowRight"){ keys[e.key]=true; e.preventDefault(); }});
-window.addEventListener("keyup", e=>{ if(e.key==="ArrowLeft"||e.key==="ArrowRight"){ keys[e.key]=false; }});
+window.addEventListener("keyup",   e=>{ if(e.key==="ArrowLeft"||e.key==="ArrowRight"){ keys[e.key]=false; }});
 function moveTo(clientX){ const rect=gameCanvas.getBoundingClientRect(); const x=Math.max(0,Math.min(gw,clientX-rect.left)); catcher.x=x; }
 gameCanvas.addEventListener("mousemove", e=> moveTo(e.clientX));
 gameCanvas.addEventListener("touchstart", e=>{ e.preventDefault(); if(e.touches[0]) moveTo(e.touches[0].clientX);},{passive:false});
 gameCanvas.addEventListener("touchmove",  e=>{ e.preventDefault(); if(e.touches[0]) moveTo(e.touches[0].clientX);},{passive:false});
 
-function startGame(){ drops=[]; score=0; scoreEl.textContent=score; tLeft=30; timeEl.textContent=tLeft; running=true; lastSpawn=performance.now(); loop(performance.now()); countdownTick(); }
+/* items */
+const COLORS = ["#22d3ee","#60a5fa","#f472b6","#34d399","#fbbf24","#f87171","#a78bfa"];
+function spawnDrop(){
+  // 20% bomb, 75% normal +1, 5% rare gem +3
+  const r = Math.random();
+  let kind, value, color;
+  if (r < 0.20) { kind="bomb"; value=-3; color="#111"; }
+  else if (r < 0.95) { kind="good"; value=1; color=COLORS[Math|Math.random()*COLORS.length]; }
+  else { kind="rare"; value=3; color="#ffd166"; }
+  const size = 18 + Math.random()*18; // visual scale
+  drops.push({ kind, value, color, x: Math.random()*gw, y: -30, vy: 2.2 + Math.random()*2.6, size });
+}
+
+function drawItem(ctx, d){
+  ctx.save(); ctx.translate(d.x, d.y);
+  if (d.kind === "bomb") {
+    ctx.fillStyle = "#111";
+    ctx.beginPath(); ctx.arc(0, 0, d.size*0.7, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = "#fffb"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(d.size*0.3, -d.size*0.7);
+    ctx.bezierCurveTo(d.size*0.6, -d.size*1.2, d.size*0.8, -d.size*1.2, d.size*1.0, -d.size*0.9);
+    ctx.stroke();
+    ctx.fillStyle = "#ff4d4d";
+    ctx.beginPath(); ctx.arc(d.size*1.05, -d.size*0.95, 3.5, 0, Math.PI*2); ctx.fill();
+  } else if (d.kind === "rare") {
+    ctx.fillStyle = d.color;
+    const R = d.size, r = R*0.45;
+    ctx.beginPath();
+    for(let i=0;i<10;i++){ const a=i*Math.PI/5, rad=i%2===0?R:r; ctx.lineTo(Math.cos(a)*rad, Math.sin(a)*rad); }
+    ctx.closePath(); ctx.shadowColor="#0006"; ctx.shadowBlur=10; ctx.fill();
+  } else {
+    ctx.fillStyle = d.color;
+    const s = d.size, rr = s*0.35;
+    roundRect(ctx, -s, -s, s*2, s*2, rr); ctx.fill();
+  }
+  ctx.restore();
+}
+function roundRect(ctx, x, y, w, h, r){
+  ctx.beginPath();
+  ctx.moveTo(x+r, y); ctx.arcTo(x+w, y,   x+w, y+h, r);
+  ctx.arcTo(x+w, y+h, x,   y+h, r);
+  ctx.arcTo(x,   y+h, x,   y,   r);
+  ctx.arcTo(x,   y,   x+w, y,   r);
+  ctx.closePath();
+}
+
+function drawCatcher(ctx){
+  ctx.save();
+  ctx.fillStyle = "rgba(0,0,0,0.38)";
+  ctx.fillRect(catcher.x-catcher.w/2, catcher.y-catcher.h/2, catcher.w, catcher.h);
+  ctx.restore();
+}
+
+function startGame(){ 
+  drops=[]; score=0; scoreEl.textContent=score; tLeft=30; timeEl.textContent=tLeft; 
+  running=true; lastSpawn=performance.now(); loop(performance.now()); countdownTick(); 
+}
 function stopGame(){ running=false; cancelAnimationFrame(rafId); }
 startGameBtn.onclick=startGame;
 
-function spawnDrop(){ const size=20+Math.random()*18; drops.push({x:Math.random()*gw,y:-30,vy:2.2+Math.random()*2.3,size,emoji:EMOJIS[Math.floor(Math.random()*EMOJIS.length)]}); }
 function loop(now){
   if(!running) return;
   rafId=requestAnimationFrame(loop);
-  if(now-lastSpawn>260+Math.random()*240){ spawnDrop(); lastSpawn=now; }
-  const speed=6; if(keys["ArrowLeft"]) catcher.x-=speed; if(keys["ArrowRight"]) catcher.x+=speed;
+
+  if(now-lastSpawn > 250 + Math.random()*260){ spawnDrop(); lastSpawn=now; }
+
+  const speed=7; if(keys["ArrowLeft"]) catcher.x-=speed; if(keys["ArrowRight"]) catcher.x+=speed;
   catcher.x=Math.max(catcher.w/2,Math.min(gw-catcher.w/2,catcher.x));
+
   gCtx.clearRect(0,0,gw,gh);
-  gCtx.fillStyle="rgba(0,0,0,0.35)"; gCtx.fillRect(catcher.x-catcher.w/2,catcher.y-catcher.h/2,catcher.w,catcher.h);
-  for(let i=drops.length-1;i>=0;i--){ const d=drops[i]; d.y+=d.vy; gCtx.font=`${d.size}px system-ui`; gCtx.fillText(d.emoji,d.x,d.y);
-    const withinX=Math.abs(d.x-catcher.x)<(catcher.w/2); const withinY=Math.abs(d.y-catcher.y)<(catcher.h+d.size*0.6);
-    if(withinX&&withinY){ drops.splice(i,1); score+=1; scoreEl.textContent=score; continue; }
+
+  if (flashUntil > performance.now()){
+    gCtx.fillStyle = "rgba(255,0,0,0.15)";
+    gCtx.fillRect(0,0,gw,gh);
+  }
+
+  drawCatcher(gCtx);
+
+  for(let i=drops.length-1;i>=0;i--){
+    const d=drops[i]; d.y+=d.vy; drawItem(gCtx,d);
+
+    const withinX=Math.abs(d.x-catcher.x)<(catcher.w/2);
+    const withinY=Math.abs(d.y-catcher.y)<(catcher.h+Math.max(12,d.size*0.6));
+    if(withinX&&withinY){
+      drops.splice(i,1);
+      score += d.value;
+      if(score<0) score=0;
+      scoreEl.textContent=score;
+      if(d.value<0){
+        flashUntil = performance.now()+200;
+        try{ navigator.vibrate && navigator.vibrate(120); }catch(e){}
+      }
+      continue;
+    }
     if(d.y>gh+40){ drops.splice(i,1); }
   }
 }
+
 function countdownTick(){
   if(!running) return;
   setTimeout(()=>{
-    tLeft-=1; timeEl.textContent=tLeft;
+    tLeft -= 1; timeEl.textContent = tLeft;
     if(tLeft<=0){
       running=false;
-      if(score>best){ best=score; localStorage.setItem("emojiCatchBest",best); }
+      if(score>best){ best=score; localStorage.setItem("shapeCatchBest",best); }
       bestEl.textContent=best;
+
       // ALWAYS submit the round’s score
       if(score>0 && window.addScore){
         const current = window.getName ? window.getName() : "";
@@ -495,9 +579,11 @@ function countdownTick(){
         name=(name.trim()||"Anonymous").slice(0,20);
         if(window.setName) window.setName(name);
         window.addScore(name, score);
-        confettiBurst(800, 120);
       }
-    }else{ countdownTick(); }
+      confettiBurst(800, 120);
+    } else {
+      countdownTick();
+    }
   },1000);
 }
 
