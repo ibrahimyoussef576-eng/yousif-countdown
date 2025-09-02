@@ -408,16 +408,35 @@ function emojiRain(chars="🎉✨",duration=2000){
 }
 function playDing(){ try{ const a=new (window.AudioContext||window.webkitAudioContext)(); const o=a.createOscillator(),g=a.createGain(); o.type="sine"; o.frequency.setValueAtTime(880,a.currentTime); g.gain.setValueAtTime(0.001,a.currentTime); g.gain.exponentialRampToValueAtTime(0.3,a.currentTime+0.02); g.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+0.8); o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime+0.8);}catch(e){} }
 
-/* === Daily Quote === */
-const quotesList = [
-  "I can do all things through Christ who strengthens me. -Philippians 4:13",
-  "For with God nothing will be impossible. -Luke 1:37",
-  "The wait makes the return sweeter. ❤️",
-  "Keep going — you're doing amazing. 🚀",
-  "Almost there! 🙌"
-];
-function showDailyQuote(){ const today=new Date().getDate(); const idx=today%quotesList.length; const el=document.getElementById("dailyQuote"); if(el) el.textContent=quotesList[idx]; }
-if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded", showDailyQuote); } else { showDailyQuote(); }
+<script>
+  /* === Daily Quote (daily rotation, aligned to start verse today) === */
+  const QUOTES = [
+    "“I can do all things through Christ who strengthens me.” — Philippians 4:13",
+    "“For with God nothing will be impossible.” — Luke 1:37",
+    "The wait makes the return sweeter. ❤️",
+    "Keep going — you're doing amazing. 🚀",
+    "Almost there! 🙌"
+  ];
+
+  // Set this to the calendar day you want the cycle to start on index 0.
+  // To make *today* show the Philippians verse, set START_DATE = today.
+  const START_DATE = new Date("2025-08-31"); // <-- change to today's date if you want the cycle to reset today
+
+  const MS_PER_DAY = 24 * 60 * 60 * 1000;
+  const dayNumber = d => Math.floor(d.getTime() / MS_PER_DAY);
+
+  function showDailyQuote() {
+    const todayIndex =
+      ((dayNumber(new Date()) - dayNumber(START_DATE)) % QUOTES.length + QUOTES.length) % QUOTES.length;
+
+    const el = document.getElementById("dailyQuote");
+    if (el) el.textContent = QUOTES[todayIndex];
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", showDailyQuote);
+  } else {
+    showDailyQuote();
 
 /* === Mini Game: Shape Catch (Bombs + Tiny Fast ×2 Mode) === */
 const gameBtn=document.getElementById("gameBtn");
