@@ -193,7 +193,7 @@ footer{ text-align:center; opacity:.85; margin:10px 0 10px; font-size:1rem; font
   // Escape helper
   function esc(s){ return (s||"").replace(/[&<>\"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;" }[m])); }
 
-  // Get best score for a specific name
+  // Get best score for a name
   async function fetchBestForName(name){
     const snap = await getDocs(query(scoresCol, where("name","==",name), limit(50)));
     let best = 0;
@@ -229,7 +229,6 @@ footer{ text-align:center; opacity:.85; margin:10px 0 10px; font-size:1rem; font
       });
 
       const top10 = unique.slice(0,10);
-
       list.innerHTML = "";
       if(top10.length === 0){
         list.innerHTML = "<li>No scores yet. Be the first! 🎯</li>";
@@ -241,10 +240,10 @@ footer{ text-align:center; opacity:.85; margin:10px 0 10px; font-size:1rem; font
           list.appendChild(li);
         });
       }
-      meta.textContent = "MANOFSTEEL sucks...";
+      meta.textContent = "Global scores — powered by Firebase.";
     }catch(err){
       list.innerHTML = "<li>Could not load leaderboard. 😿</li>";
-      meta.textContent = String(err);
+      document.getElementById("lbMeta").textContent = String(err);
       console.error(err);
     }
   }
@@ -254,12 +253,8 @@ footer{ text-align:center; opacity:.85; margin:10px 0 10px; font-size:1rem; font
     try{
       const cleanName = (name || "Anonymous").toString().trim().slice(0,20);
       const safeScore = Math.max(0, Math.min(500, Number(score) || 0));
-
       const prevBest = await fetchBestForName(cleanName);
-      if (safeScore <= prevBest) {
-        await renderLB();
-        return;
-      }
+      if (safeScore <= prevBest) { await renderLB(); return; }
 
       await addDoc(scoresCol, {
         name: cleanName,
@@ -348,9 +343,8 @@ const mask = document.getElementById("mask");
 const scratchWrap = document.getElementById("scratchWrap");
 const scratchCanvas = document.getElementById("scratchCanvas");
 document.getElementById("revealBtn").onclick = ()=>{ mask.style.display="none"; scratchWrap.style.display="none"; };
-document.getElementById("scratchBtn").onclick = ()=>{
-  mask.style.display="none"; scratchWrap.style.display="block"; initScratch();
-};
+document.getElementById("scratchBtn").onclick = ()=>{ mask.style.display="none"; scratchWrap.style.display="block"; initScratch(); };
+
 function initScratch(){
   const c = scratchCanvas, ctx = c.getContext("2d");
   const wrapRect = scratchWrap.getBoundingClientRect();
@@ -408,37 +402,25 @@ function emojiRain(chars="🎉✨",duration=2000){
 }
 function playDing(){ try{ const a=new (window.AudioContext||window.webkitAudioContext)(); const o=a.createOscillator(),g=a.createGain(); o.type="sine"; o.frequency.setValueAtTime(880,a.currentTime); g.gain.setValueAtTime(0.001,a.currentTime); g.gain.exponentialRampToValueAtTime(0.3,a.currentTime+0.02); g.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+0.8); o.connect(g).connect(a.destination); o.start(); o.stop(a.currentTime+0.8);}catch(e){} }
 
-<script>
-  /* === Daily Quote (daily rotation, aligned to start verse today) === */
-  const QUOTES = [
-    "“I can do all things through Christ who strengthens me.” — Philippians 4:13",
-    "“For with God nothing will be impossible.” — Luke 1:37",
-    "The wait makes the return sweeter. ❤️",
-    "Keep going — you're doing amazing. 🚀",
-    "Almost there! 🙌"
-  ];
+/* === Daily Quote (rotates daily starting TODAY: Sept 2, 2025) === */
+const QUOTES = [
+  "“I can do all things through Christ who strengthens me.” — Philippians 4:13",
+  "“For with God nothing will be impossible.” — Luke 1:37",
+  "The wait makes the return sweeter. ❤️",
+  "Keep going — you're doing amazing. 🚀",
+  "Almost there! 🙌"
+];
+const START_DATE_FOR_QUOTES = new Date("2025-09-02"); // start cycle today
+const MS_PER_DAY = 24*60*60*1000;
+const dayNumber = d => Math.floor(d.getTime()/MS_PER_DAY);
+function showDailyQuote(){
+  const idx = ((dayNumber(new Date()) - dayNumber(START_DATE_FOR_QUOTES)) % QUOTES.length + QUOTES.length) % QUOTES.length;
+  const el = document.getElementById("dailyQuote");
+  if (el) el.textContent = QUOTES[idx];
+}
+document.readyState==="loading" ? document.addEventListener("DOMContentLoaded",showDailyQuote) : showDailyQuote();
 
-  // Set this to the calendar day you want the cycle to start on index 0.
-  // To make *today* show the Philippians verse, set START_DATE = today.
-  const START_DATE = new Date("2025-08-31"); // <-- change to today's date if you want the cycle to reset today
-
-  const MS_PER_DAY = 24 * 60 * 60 * 1000;
-  const dayNumber = d => Math.floor(d.getTime() / MS_PER_DAY);
-
-  function showDailyQuote() {
-    const todayIndex =
-      ((dayNumber(new Date()) - dayNumber(START_DATE)) % QUOTES.length + QUOTES.length) % QUOTES.length;
-
-    const el = document.getElementById("dailyQuote");
-    if (el) el.textContent = QUOTES[todayIndex];
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", showDailyQuote);
-  } else {
-    showDailyQuote();
-
-/* === Mini Game: Shape Catch (Bombs + Tiny Fast ×2 Mode) === */
+/* === Mini Game: Shape Catch (Bombs + tiny fast ×2 Mode) === */
 const gameBtn=document.getElementById("gameBtn");
 const gameModal=document.getElementById("gameModal");
 const startGameBtn=document.getElementById("startGameBtn");
@@ -452,8 +434,8 @@ const doubleBadge=document.getElementById("doubleBadge");
 
 let gCtx,gw,gh,rafId,running=false,tLeft=30,score=0,best=0,lastSpawn=0;
 let catcher,drops=[];
-let flashUntil=0; // red flash when bomb hit
-let doubleUntil=0; // timestamp until double points active
+let flashUntil=0;
+let doubleUntil=0;
 
 best=+localStorage.getItem("shapeCatchBest")||0; bestEl.textContent=best;
 
@@ -495,31 +477,26 @@ const COLORS = ["#22d3ee","#60a5fa","#f472b6","#34d399","#fbbf24","#f87171","#a7
 function isDoubleMode(){ return performance.now() < doubleUntil; }
 
 function spawnDrop(){
-  // Spawn mix changes if Double Mode is active (more bombs!)
-  // Base: 10% x2, 20% bomb, 65% good, 5% rare
-  // Double Mode: 15% x2, 35% bomb, 45% good, 5% rare
   const dm = isDoubleMode();
   const r = Math.random()*100;
   let kind, value, color;
 
   if ((!dm && r < 10) || (dm && r < 15)) {
-    kind="double"; value=2; color="#a855f7";           // purple ×2 block (tiny & fast)
+    kind="double"; value=2; color="#a855f7";
   } else if ((!dm && r < 30) || (dm && r < 50)) {
-    kind="bomb"; value=-3; color="#111";               // more bombs in double mode
+    kind="bomb"; value=-3; color="#111";
   } else if ((!dm && r < 95) || (dm && r < 95)) {
     kind="good"; value=1; color=COLORS[Math|Math.random()*COLORS.length];
   } else {
     kind="rare"; value=3; color="#ffd166";
   }
 
-  // sizes & speeds
   let size, vy;
   if (kind === "double") { size = 10 + Math.random()*5; vy = 3.6 + Math.random()*2.2; }
   else if (kind === "bomb") { size = 16 + Math.random()*10; vy = 2.4 + Math.random()*2.6; }
   else if (kind === "rare") { size = 16 + Math.random()*10; vy = 2.4 + Math.random()*2.4; }
   else { size = 14 + Math.random()*8; vy = 2.2 + Math.random()*2.2; }
 
-  // faster overall when in double mode
   if (dm) vy *= 1.15;
 
   drops.push({ kind, value, color, x: Math.random()*gw, y: -30, vy, size });
@@ -543,7 +520,6 @@ function drawItem(ctx, d){
     for(let i=0;i<10;i++){ const a=i*Math.PI/5, rad=i%2===0?R:r; ctx.lineTo(Math.cos(a)*rad, Math.sin(a)*rad); }
     ctx.closePath(); ctx.shadowColor="#0006"; ctx.shadowBlur=10; ctx.fill();
   } else if (d.kind === "double") {
-    // tiny purple block with “×2”
     ctx.fillStyle = d.color;
     const s = d.size, rr = s*0.35;
     roundRect(ctx, -s, -s, s*2, s*2, rr); ctx.fill();
@@ -552,7 +528,6 @@ function drawItem(ctx, d){
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText("×2", 0, 0);
   } else {
-    // good gem: rounded square with M
     ctx.fillStyle = d.color;
     const s = d.size, rr = s*0.35;
     roundRect(ctx, -s, -s, s*2, s*2, rr); ctx.fill();
@@ -591,12 +566,10 @@ function loop(now){
   if(!running) return;
   rafId=requestAnimationFrame(loop);
 
-  // spawn pacing (faster in double mode)
   const dm = isDoubleMode();
   const interval = dm ? 200 : 260;
   if(now-lastSpawn > interval + Math.random()*220){ spawnDrop(); lastSpawn=now; }
 
-  // controls
   const speed=7 + (dm ? 0.5 : 0);
   if(keys["ArrowLeft"]) catcher.x-=speed; 
   if(keys["ArrowRight"]) catcher.x+=speed;
@@ -604,7 +577,6 @@ function loop(now){
 
   gCtx.clearRect(0,0,gw,gh);
 
-  // bomb hit flash
   if (flashUntil > performance.now()){
     gCtx.fillStyle = "rgba(255,0,0,0.15)";
     gCtx.fillRect(0,0,gw,gh);
@@ -621,7 +593,6 @@ function loop(now){
       drops.splice(i,1);
 
       if (d.kind === "double") {
-        // grant +2 immediately, and activate Double Mode (7s)
         score += 2;
         doubleUntil = performance.now() + 7000;
         doubleBadge.classList.add("show");
@@ -642,7 +613,6 @@ function loop(now){
     if(d.y>gh+40){ drops.splice(i,1); }
   }
 
-  // hide badge if double mode ended
   if (!isDoubleMode()) doubleBadge.classList.remove("show");
 }
 
@@ -660,7 +630,7 @@ function countdownTick(){
         let name = current || prompt("Great round! Enter your name for the leaderboard:", "") || "";
         name=(name.trim()||"Anonymous").slice(0,20);
         if(window.setName) window.setName(name);
-        window.addScore(name, score); // will save only if it beats previous best
+        window.addScore(name, score);
       }
       confettiBurst(800, 120);
     } else {
